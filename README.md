@@ -10,6 +10,29 @@ scanner : input from keyboard or file redirection stream
 Program will quit when EOF reached or there is an error
 When in manual keyboard input mode, CTRL-Z (EOF signal) will terminate the program
 
+## The Context-Free Grammar to be used
+~~~~
+<program>  ->     <vars> <block>
+<block>       ->      Begin <vars> <stats> End
+<vars>          ->      empty | Var Identifier <mvars> 
+<mvars>     ->     empty | : : Identifier <mvars>
+<expr>        ->      <M> + <expr> | <M>
+<M>              ->     <T> - <M> | <T>
+<T>              ->      <F> * <T> | <F> / <T> | <F>
+<F>              ->      - <F> | <R>
+<R>              ->      [ <expr> ] | Identifier | Number   
+<stats>         ->      <stat>  <mStat>
+<mStat>       ->      empty | <stat>  <mStat>
+<stat>           ->      <in> | <out> | <block> | <if> | <loop> | <assign>
+<in>              ->      Scan : Identifier .
+<out>            ->      Print [ <expr>  ] .
+<if>               ->      [ <expr> <RO> <expr> ]  Iff <block>             
+<loop>          ->      Loop [ <expr> <RO> <expr> ] <block>
+<assign>       ->      Identifier == <expr> .                    // == is one token here
+<RO>            ->      >=> | <=< | = |  > | <  |  =!=           // each is one token here
+~~~~
+
+
 ## Lexical Definitions
 - All case sensitive
 - Each scanner error should display the error message after "Scanner Error:"
@@ -42,5 +65,6 @@ When in manual keyboard input mode, CTRL-Z (EOF signal) will terminate the progr
 
 ![mapped driver table]
 (https://github.com/genterist/simpleParser/blob/master/Screen%20Shot%202016-10-16%20at%2011.24.31%20AM.png)
+
 
 .
