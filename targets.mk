@@ -2,16 +2,19 @@
 C_SRCS += \
 /token.c \
 /scanner.c \
+/parser.c \
 /main.c 
 
 OBJS += \
 ./token.o \
 ./scanner.o \
+./parser.o \
 ./main.o 
 
 C_DEPS += \
 ./token.d \
 ./scanner.d \
+./parser.d \
 ./main.d 
 
 

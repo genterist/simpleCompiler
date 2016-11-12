@@ -26,6 +26,7 @@
 
 #include "./scanner.h"
 #include "./token.h"
+#include "./parser.h"
 
 int main(int argc, char *argv[])
 {
@@ -42,14 +43,7 @@ int main(int argc, char *argv[])
 	  else
 	    { scanIt = scanByStream(stdin);}   // if file name not specified, read from input stream
 	
-	myToken t;
-	while (hasTokenError (t = getToken(scanIt)) == 0) {       // if there is any error returned in token value
-	    printToken (t);
-    }
-
-	
-    //printDriverTable (scanIt);
-    clearToken (t);
+    parser(scanIt);
 	clearScanner (scanIt);
 	
 	return EXIT_SUCCESS;
