@@ -13,25 +13,30 @@ When in manual keyboard input mode, CTRL-Z (EOF signal) will terminate the progr
 ## The Context-Free Grammar to be used
 ~~~~
 <program>  ->     <vars> <block>
-<block>       ->      Begin <vars> <stats> End
-<vars>          ->      empty | Var Identifier <mvars> 
-<mvars>     ->     empty | : : Identifier <mvars>
-<expr>        ->      <M> + <expr> | <M>
-<M>              ->     <T> - <M> | <T>
-<T>              ->      <F> * <T> | <F> / <T> | <F>
-<F>              ->      - <F> | <R>
-<R>              ->      [ <expr> ] | Identifier | Number   
-<stats>         ->      <stat>  <mStat>
-<mStat>       ->      empty | <stat>  <mStat>
-<stat>           ->      <in> | <out> | <block> | <if> | <loop> | <assign>
-<in>              ->      Scan : Identifier .
-<out>            ->      Print [ <expr>  ] .
-<if>               ->      [ <expr> <RO> <expr> ]  Iff <block>             
-<loop>          ->      Loop [ <expr> <RO> <expr> ] <block>
-<assign>       ->      Identifier == <expr> .                    // == is one token here
-<RO>            ->      >=> | <=< | = |  > | <  |  =!=           // each is one token here
+<block>    ->      Begin <vars> <stats> End
+<vars>     ->      empty | Var Identifier <mvars> 
+<mvars>    ->      empty | : : Identifier <mvars>
+<expr>     ->      <M> + <expr> | <M>
+<M>        ->      <T> - <M> | <T>
+<T>        ->      <F> * <T> | <F> / <T> | <F>
+<F>        ->      - <F> | <R>
+<R>        ->      [ <expr> ] | Identifier | Number   
+<stats>    ->      <stat>  <mStat>
+<mStat>    ->      empty | <stat>  <mStat>
+<stat>     ->      <in> | <out> | <block> | <if> | <loop> | <assign>
+<in>       ->      Scan : Identifier .
+<out>      ->      Print [ <expr>  ] .
+<if>       ->      [ <expr> <RO> <expr> ]  Iff <block>             
+<loop>     ->      Loop [ <expr> <RO> <expr> ] <block>
+<assign>   ->      Identifier == <expr> .                    // == is one token here
+<RO>       ->      >=> | <=< | = |  > | <  |  =!=           // each is one token here
 ~~~~
 
+## Recursive descent parsing
+- This is a top-down parser
+- Every non-terminal has a function
+- Parsed results will be added into a binary tree
+- Parsing is done left to right
 
 ## Lexical Definitions
 - All case sensitive
