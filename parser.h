@@ -19,4 +19,6 @@
 //************************
 // FUNCTION PROTOTYPES
 
+void parser ( myScanner scanIt);
+
 #endif

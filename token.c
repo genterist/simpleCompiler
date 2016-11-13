@@ -27,12 +27,6 @@
 int line = 1;
 int lineFlag = 0;
 
-struct Token {
-    int tokenType;
-    char tokenVal[bufLen];
-    int  tokenLine;
-};
-
 
 /*****************
  * Function:
@@ -183,6 +177,7 @@ myToken getToken(myScanner s) {
     char c;
     char buffer[bufLen];
     int flag = 0;
+    int eofFlag = 0;
     
     // initialize token
     myToken t;
@@ -205,7 +200,8 @@ myToken getToken(myScanner s) {
         if (c == EOF) {
             //fprintf (stderr,"End of file reached. \n");
             c = ' ';                                           //treat it as a white space
-            flag = 1;                                          //treat it as a white space
+            flag = 1;                                          
+            eofFlag = 1;
         }
         
 		currentState = findNextState (currentState, c, s->table);
@@ -230,7 +226,7 @@ myToken getToken(myScanner s) {
 		    //memset(&buffer[0], 0, sizeof(buffer));                // clearing the buffer
         }
         else {
-            buffer[charRead++] = c;							      // append c to buffer
+            if (isspace((int) c) == 0) buffer[charRead++] = c;							      // append c to buffer, skip white space
             c = fgetc(s->fp);
             
         }
@@ -238,6 +234,12 @@ myToken getToken(myScanner s) {
 	}
     
     t = checkReservedWord(t);
+
+    if (eofFlag == 1) {
+        strcpy(t->tokenVal, "EOF");
+        t->tokenType = eofCode; //998
+    }
+
     
     return t;
 }

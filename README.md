@@ -9,6 +9,7 @@ scanner : input from keyboard or file redirection stream
 
 Program will quit when EOF reached or there is an error
 When in manual keyboard input mode, CTRL-Z (EOF signal) will terminate the program
+EOF is recommended to be on a new line in programming text (a blank line at the end of each programming text, after "End" keyword)
 
 ## The Context-Free Grammar to be used
 ~~~~

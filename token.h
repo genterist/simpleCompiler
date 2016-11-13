@@ -25,7 +25,6 @@
 #ifndef _TOKEN_H_
 #define _TOKEN_H_
 
-typedef struct Token *myToken;
 
 #include <stdio.h>
 #include "./scanner.h"
@@ -44,7 +43,15 @@ typedef struct Token *myToken;
 #define intCode (995)
 #define comCode (996)
 #define keywordCode (997)
+#define eofCode (998)
 
+//declare Token structure
+typedef struct Token *myToken;
+struct Token {
+    int tokenType;
+    char tokenVal[bufLen];
+    int  tokenLine;
+};
 
 /*****************
  * Function:

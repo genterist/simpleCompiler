@@ -26,6 +26,7 @@
 
 #include "./scanner.h"
 #include "./token.h"
+#include "./parser.h"
 
 
 //************************
@@ -77,23 +78,137 @@
 
 //************************
 // GLOBAL VARIABLES
-
-
+myToken t;      // note that t has {int tokenType, char tokenVal[bufLen] , int  tokenLine }
 
 //************************
 // FUNCTION IMPLEMENTATIONS
 
 void parser ( myScanner scanIt) {
-    myToken t;
-    while (hasTokenError (t = getToken(scanIt)) == 0) {       // if there is any error returned in token value
-	    printToken (t);
+    
+    
+    if (hasTokenError (t = getToken(scanIt)) == 0) { // if there is no error in getting token
+        //proceed
+        program_parse (scanIt);
+        
+    } else {
+        fprintf(stderr, "[ERROR : %d ] Cannot get token information from provided stream\n", errno);
     }
 
-	
-    //printDriverTable (scanIt);
+    if (t->tokenType == eofCode) {
+        fprintf(stderr, "[EOF] Parsing reached the end of file.\n");
+    }    
+    
     clearToken (t);
+    return;
 }
 
+//<program>  ->     <vars> <block>
+//Return 0 if no <vars> or <block> found
+//1 if <var> is found
+//2 if <block> is found
+int program_parse (myScanner scanIt) {
+    printToken (t);
+
+    // if 'Var' is found
+    if (strstr(t->tokenVal,"Var")!=NULL) {
+        if (hasTokenError (t = getToken(scanIt)) == 0) {
+            vars_parse (scanIt);
+            block_parse (scanIt);
+            return 1;
+        } else {
+            fprintf(stderr, "[ERROR : %d ] Cannot get token information from provided stream\n", errno);
+            return 0;
+        }
+    } 
+    // if 'Begin' is found (means no var section)
+    else if (strcmp(t->tokenVal,"Begin")==0) {
+        if (hasTokenError (t = getToken(scanIt)) == 0) {
+            block_parse (scanIt);
+            return 2;
+        } else {
+            fprintf(stderr, "[ERROR : %d ] Cannot get token information from provided stream\n", errno);
+            return 0;
+        }
+    } else
+    {
+        fprintf(stderr, "[ERROR : line %d] Incorrect syntax. \n", t->tokenLine);
+        return 0;
+    }
+    return 0;
+}
+
+
+//<block>    ->      Begin <vars> <stats> End
+//return 1 if success, 0 if there's an error
+int block_parse (myScanner scanIt) {
+    if (strcmp(t->tokenVal,"Var")==0) {
+        if (hasTokenError (t = getToken(scanIt)) == 0) {
+            vars_parse (scanIt);
+            stats_parse (scanIt);
+        } else {
+            fprintf(stderr, "[ERROR : %d ] Cannot get token information from provided stream\n", errno);
+            return 0;
+        }
+    }
+    // if vars is all empty, then we check for <stats>
+    else if (strcmp(t->tokenVal,"Scan")==0  || strcmp(t->tokenVal,"Print")==0  || 
+                strcmp(t->tokenVal,"[")==0  || strcmp(t->tokenVal,"Loop")==0  || 
+                t->tokenType==idCode ) {
+        if (hasTokenError (t = getToken(scanIt)) == 0) {
+            stats_parse (scanIt);
+        } else {
+            fprintf(stderr, "[ERROR : %d ] Cannot get token information from provided stream\n", errno);
+            return 0;
+        }
+        
+    }
+    // if found no <stats>, issue syntax error because <stats> can't be empty per given grammar
+    else
+    {
+        fprintf(stderr, "[ERROR : line %d] Incorrect syntax. \n", t->tokenLine);
+        return 0;
+    }
+    
+    // grab next token and check for End
+    if (hasTokenError (t = getToken(scanIt)) == 0) { 
+        if (strcmp(t->tokenVal,"End")==0) return 1;
+        else {
+            fprintf(stderr, "[ERROR : line %d] Incorrect syntax. \n", t->tokenLine);
+            return 0;
+        }
+
+
+    } else {
+        fprintf(stderr, "[ERROR : %d ] Cannot get token information from provided stream\n", errno);
+        return 0;
+    }
+    
+    return 0;    
+}
+
+//<vars>     ->      empty | Var Identifier <mvars> 
+int vars_parse (myScanner scanIt) {
+    
+}
+
+//<mvars>    ->     empty | : : Identifier <mvars>
+//<expr>     ->      <M> + <expr> | <M>
+//<M>        ->     <T> - <M> | <T>
+//<T>        ->      <F> * <T> | <F> / <T> | <F>
+//<F>        ->      - <F> | <R>
+//<R>        ->      [ <expr> ] | Identifier | Number   
+//<stats>    ->      <stat>  <mStat>
+int stats_parse (myScanner scanIt) {
+    
+}
+//<mStat>    ->      empty | <stat>  <mStat>
+//<stat>     ->      <in> | <out> | <block> | <if> | <loop> | <assign>
+//<in>       ->      Scan : Identifier .
+//<out>      ->      Print [ <expr>  ] .
+//<if>       ->      [ <expr> <RO> <expr> ]  Iff <block>             
+//<loop>     ->      Loop [ <expr> <RO> <expr> ] <block>
+//<assign>   ->      Identifier == <expr> .                   // == is one token here
+//<RO>       ->      >=> | <=< | = |  > | <  |  =!=           // each is one token here
 //************************
 
 
