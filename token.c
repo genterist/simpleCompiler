@@ -24,7 +24,7 @@
 
 //configurations
 //int bufLen = 100;
-int line = 1;
+int line = 0;
 int lineFlag = 0;
 
 
@@ -193,7 +193,7 @@ myToken getToken(myScanner s) {
             fprintf (stderr,"ERROR: Token name exceeds %d characters!! \n", bufLen);
             }                     //concat all characters beyond buffer
         if (c == '\n') {                                        //in case of a new line 
-            lineFlag = 1;
+            lineFlag++;
             c = ' ';                                            //treat it as a white space
         }
         
@@ -208,12 +208,12 @@ myToken getToken(myScanner s) {
 		
 		if (currentState>=991 && currentState <=999) {            // if a correct token is found
 		    flag = 1;
+		    line = line + lineFlag;
+            lineFlag = 0;
 		    t->tokenType = currentState;
 		    strcpy(t->tokenVal, buffer);
 		    t->tokenLine = line;
 		    memset(&buffer[0], 0, sizeof(buffer));                // clearing the buffer
-		    line = line + lineFlag;
-            lineFlag = 0;
             ungetc(c, s->fp);                                     // step back one character
 		}
 		else if (currentState>=980 && currentState <=989) {       // if an error is found
@@ -226,7 +226,8 @@ myToken getToken(myScanner s) {
 		    //memset(&buffer[0], 0, sizeof(buffer));                // clearing the buffer
         }
         else {
-            if (isspace((int) c) == 0) buffer[charRead++] = c;							      // append c to buffer, skip white space
+            int temp = isspace((int) c);
+            if (temp == 0) buffer[charRead++] = c;							      // append c to buffer, skip white space
             c = fgetc(s->fp);
             
         }
@@ -262,6 +263,7 @@ myToken getToken(myScanner s) {
  *****************/
 int hasTokenError (myToken t) {
     if (strcmp(t->tokenVal, "[Error]") == 0) return 1;
+    if (strcmp(t->tokenVal, "EOF") == 0) return 1;
     if (strcmp(t->tokenVal, "") == 0) return 1;
     return 0;
 }

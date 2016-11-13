@@ -20,5 +20,6 @@
 // FUNCTION PROTOTYPES
 
 void parser ( myScanner scanIt);
+int launch (int a, myScanner scanIt);
 
 #endif
