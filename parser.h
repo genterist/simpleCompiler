@@ -15,11 +15,13 @@
 
 #include <stdio.h>
 #include "./token.h"
+#include "./buildTree.h"
+#include "./traversals.h"
 
 //************************
 // FUNCTION PROTOTYPES
 
-void parser ( myScanner scanIt);
-int launch (int a, myScanner scanIt);
+void parser ( myScanner scanIt, Treeptr myTree);
+int launch (int code, myScanner scanIt, Treeptr myTree);
 
 #endif

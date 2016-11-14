@@ -19,7 +19,7 @@
 
 Treeptr insertNewNode(int data, Treeptr parent_node){
 	Treeptr newNode = (Treeptr) malloc(sizeof(struct BSTNode));
-	newNode->data=data;
+	strcpy(newNode->data,data);
 	newNode->count=1;
 	newNode->left=newNode->right=NULL;
 	newNode->parent = parent_node;

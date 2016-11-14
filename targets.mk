@@ -1,7 +1,7 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
-/traversals.c
-/buildTree.c
+/traversals.c \
+/buildTree.c \
 /token.c \
 /scanner.c \
 /parser.c \

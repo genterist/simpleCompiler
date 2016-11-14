@@ -27,10 +27,15 @@
 #include "./scanner.h"
 #include "./token.h"
 #include "./parser.h"
+#include "./buildTree.h"
+#include "./traversals.h"
 
 int main(int argc, char *argv[])
 {
     myScanner scanIt;                      // init scanner
+                                           //init tree
+	Treeptr myBNTree;
+	myBNTree = NULL;
     
 	char *prog = argv[0];                  // capture program name here
 
@@ -43,7 +48,7 @@ int main(int argc, char *argv[])
 	  else
 	    { scanIt = scanByStream(stdin);}   // if file name not specified, read from input stream
 	
-    parser(scanIt);
+    parser(scanIt, myBNTree);
 	clearScanner (scanIt);
 	
 	return EXIT_SUCCESS;

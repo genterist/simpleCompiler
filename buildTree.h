@@ -16,7 +16,7 @@
 //declare data type for a specific node in a BSTree
 typedef struct BSTNode* Treeptr;
 struct BSTNode{
-	int data;
+	char data[50];
 	int count;
 	Treeptr left;
 	Treeptr right;
