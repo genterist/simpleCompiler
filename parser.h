@@ -21,7 +21,7 @@
 //************************
 // FUNCTION PROTOTYPES
 
-void parser ( myScanner scanIt, Treeptr myTree);
-int launch (int code, myScanner scanIt, Treeptr myTree);
+void parser ( myScanner scanIt );
+int launch (int code, myScanner scanIt );
 
 #endif

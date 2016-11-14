@@ -59,11 +59,11 @@ void TravPreOrder (Treeptr node, int level, const char *filename){
 	if (node != NULL){
 		if (filename == NULL) {
 			for (temp = 0; temp<=theLevel; temp++) printf("  ");
-			printf("%d:%d \n", node->data, node->count);
+			printf("%s:%d \n", node->data, node->count);
 		} else
 		{
 			for (temp = 0; temp<=theLevel; temp++) strcat(message,"  ");
-			sprintf(buffer, "%d:%d \n", node->data, node->count);
+			sprintf(buffer, "%s:%d \n", node->data, node->count);
 			strcat (message, buffer);
 			saveLog (filename, message);
 			strncpy(buffer, "", sizeof(buffer));

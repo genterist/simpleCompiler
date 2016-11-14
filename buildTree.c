@@ -17,7 +17,7 @@
 
 
 
-Treeptr insertNewNode(int data, Treeptr parent_node){
+Treeptr insertNewNode(char data[25], Treeptr parent_node){
 	Treeptr newNode = (Treeptr) malloc(sizeof(struct BSTNode));
 	strcpy(newNode->data,data);
 	newNode->count=1;
@@ -26,12 +26,12 @@ Treeptr insertNewNode(int data, Treeptr parent_node){
 	return newNode;
 }
 
-Treeptr buildTree(Treeptr root,int data, Treeptr parent_node){
+Treeptr buildTree(Treeptr root, char data[25], Treeptr parent_node){
 	if(root==NULL){
 		root=insertNewNode(data, parent_node);
-	} else if(data<root->data){
+	} else if((int)data< (int)root->data){
 		root->left=buildTree(root->left,data, root);
-	} else if (data>root->data) {
+	} else if ((int)data> (int)root->data) {
 		root->right=buildTree(root->right,data, root);
 	} else {
 		root->count +=1;

@@ -30,12 +30,13 @@
 #include "./buildTree.h"
 #include "./traversals.h"
 
+
 int main(int argc, char *argv[])
 {
     myScanner scanIt;                      // init scanner
                                            //init tree
-	Treeptr myBNTree;
-	myBNTree = NULL;
+
+	//myBNTree = NULL;
     
 	char *prog = argv[0];                  // capture program name here
 
@@ -48,7 +49,8 @@ int main(int argc, char *argv[])
 	  else
 	    { scanIt = scanByStream(stdin);}   // if file name not specified, read from input stream
 	
-    parser(scanIt, myBNTree);
+    parser(scanIt);
+    TravPreOrder(theTree, 0, "parseResult");
 	clearScanner (scanIt);
 	
 	return EXIT_SUCCESS;

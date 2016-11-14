@@ -5,8 +5,7 @@ Begin
     
     Scan : a .
     Scan : b .
-    Print [ a - b ] .
-    Var x : : y 
+    Print [ a ] .
 
 
 End

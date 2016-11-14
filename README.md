@@ -1,11 +1,13 @@
 # FULL SCANNER IMPLEMENTATION
 Author: Tam N Nguyen
 
+
 ## Execution
 make : compile main program
-make test : compile test program
-scanner [file name] : scan a file
-scanner : input from keyboard or file redirection stream
+testFronEnd [file name] : scan a file
+testFrontEnd : input from keyboard or file redirection stream
+
+Results will be saved to "parseResult"
 
 Program will quit when EOF reached or there is an error
 When in manual keyboard input mode, CTRL-Z (EOF signal) will terminate the program

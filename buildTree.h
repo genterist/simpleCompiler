@@ -16,14 +16,16 @@
 //declare data type for a specific node in a BSTree
 typedef struct BSTNode* Treeptr;
 struct BSTNode{
-	char data[50];
+	char data[25];
 	int count;
 	Treeptr left;
 	Treeptr right;
 	Treeptr parent;
 };
+
+Treeptr theTree;
 //--
 
-Treeptr buildTree(Treeptr ,int , Treeptr );
+Treeptr buildTree(Treeptr , char data[25], Treeptr );
 
 #endif /* BUILDTREE_H_ */
