@@ -1,17 +1,23 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
+/traversals.c
+/buildTree.c
 /token.c \
 /scanner.c \
 /parser.c \
 /main.c 
 
 OBJS += \
+./traversals.o \
+./buildTree.o \
 ./token.o \
 ./scanner.o \
 ./parser.o \
 ./main.o 
 
 C_DEPS += \
+./traversals.d \
+./buildTree.d \
 ./token.d \
 ./scanner.d \
 ./parser.d \

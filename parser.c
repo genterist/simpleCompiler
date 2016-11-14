@@ -247,12 +247,12 @@ int mvars_parse (myScanner scanIt) {
         return 1;
 }
 
+//<stats>    ->      <stat>  <mStat>
 int stats_parse (myScanner scanIt) {
     
     int flag = 1;
     if (stat_parse (scanIt)==0) flag--;                                             // check for <stat>
-    else
-        if (mStat_parse (scanIt) ==0) flag--;                                       // check for <mStat>
+    if (mStat_parse (scanIt) ==0) flag--;                                       // check for <mStat>
     //note that launch function is not used in these function calls
     //no current token got consumed yet
     if (flag <= 0) return 0;
@@ -264,6 +264,7 @@ int stats_parse (myScanner scanIt) {
 int mStat_parse (myScanner scanIt) {
     int flag = 1;
     if (stat_parse(scanIt)==1) {
+        fprintf(stderr, "[XXX]\n");
         if (mStat_parse (scanIt)==0) flag--;
     }
     else
@@ -278,30 +279,35 @@ int mStat_parse (myScanner scanIt) {
 
 //<stat>     ->      <in> | <out> | <block> | <if> | <loop> | <assign>
 int stat_parse (myScanner scanIt) {
-    int flag = 1;
+    int flag = 0;
     if (strstr(t->tokenVal,"Scan")!=NULL) {
+        flag++;
         if(launch (scan_parse_code, scanIt)==0) flag--;
     }
     else if (strstr(t->tokenVal,"Print")!=NULL) {
+        flag++;
         if(launch (print_parse_code, scanIt)==0) flag--;
     }  
-    else if (strstr(t->tokenVal,"[")!=NULL) {
+    else if (t->tokenVal[0] =="[") {
+        flag++;
         if(launch (iff_parse_code, scanIt)==0) flag--;
     }
     else if (strstr(t->tokenVal,"Loop")!=NULL) {
+        flag++;
         if(launch (loop_parse_code, scanIt)==0) flag--;
     }
     else if (strstr(t->tokenVal,"Begin")!=NULL) {
+        flag++;
         if(launch (block_parse_code, scanIt)==0) flag--;
     }
     else if (t->tokenType==idCode ) {
+        flag++;
         if(launch (assign_parse_code, scanIt)==0) flag--;
     }
     // if found no <stats>, issue syntax error because <stats> can't be empty per given grammar
-    else
+    else if (flag == 0)
     {
         fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing the body of <stat> block. \n", t->tokenLine-1);
-        flag --;
     }
     if (flag <= 0) return 0;
     else
@@ -351,7 +357,7 @@ int print_parse (myScanner scanIt) {
     }
     else
     {
-        fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing '['. \n", t->tokenLine-1);
+        fprintf(stderr, "[ERROR : line %d] Incorrect syntax in 'Print' function. Missing '['. \n", t->tokenLine-1);
         flag --;
     }
     
@@ -360,7 +366,7 @@ int print_parse (myScanner scanIt) {
     }
     else
     {
-        fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing <expr>. \n", t->tokenLine-1);
+        fprintf(stderr, "[ERROR : line %d] Incorrect syntax in 'Print' command. Missing <expr>. \n", t->tokenLine-1);
         flag --;
     }
     
@@ -369,7 +375,7 @@ int print_parse (myScanner scanIt) {
     }
     else
     {
-        fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing ']'. \n", t->tokenLine-1);
+        fprintf(stderr, "[ERROR : line %d] Incorrect syntax in 'Print' command. Missing ']'. \n", t->tokenLine-1);
         flag --;
     }
     
@@ -378,7 +384,7 @@ int print_parse (myScanner scanIt) {
     }
     else
     {
-        fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing '.' \n", t->tokenLine-1);
+        fprintf(stderr, "[ERROR : line %d] Incorrect syntax in 'Print' command. Missing '.' \n", t->tokenLine-1);
         flag --;
     }
     if (flag <= 0) return 0;
@@ -391,7 +397,7 @@ int iff_parse (myScanner scanIt) {
     int flag = 1;
     
                                                             //check for <expr>
-    if (strstr(t->tokenVal,"-")!=NULL || strstr(t->tokenVal,"[")!=NULL || t->tokenType==idCode || t->tokenType==intCode) {
+    if (t->tokenVal[0]=="-" || t->tokenVal[0] =="[" || t->tokenType==idCode || t->tokenType==intCode) {
         if(expr_parse(scanIt)==0) flag--;
     }
     else

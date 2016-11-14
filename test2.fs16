@@ -1,9 +1,13 @@
 Var a : : b 
 
 Begin
-    Var a
     
-    Scan : c.
+    
+    Scan : a .
+    Scan : b .
+    Print [ a - b ] .
+    Var x : : y 
+
 
 End
 
