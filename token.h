@@ -103,4 +103,6 @@ myToken getToken(myScanner s);
  *****************/
 int hasTokenError (myToken t); 
 
+void clearToken (myToken t);
+
 #endif

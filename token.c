@@ -226,7 +226,8 @@ myToken getToken(myScanner s) {
 		    //memset(&buffer[0], 0, sizeof(buffer));                // clearing the buffer
         }
         else {
-            int temp = isspace((int) c);
+            int temp;
+            temp = isspace((int) c);
             if (temp == 0) buffer[charRead++] = c;							      // append c to buffer, skip white space
             c = fgetc(s->fp);
             

@@ -49,32 +49,6 @@
 //<assign>   ->      Identifier == <expr> .                   // == is one token here
 //<RO>       ->      >=> | <=< | = |  > | <  |  =!=           // each is one token here
 
-
-//************************
-//PARSER ERROR CODES
-//
-#define TRUE    1
-#define FALSE   0
-#define PROGRAM_ERROR       100
-#define BLOCK_ERROR         101
-#define VARS_ERROR          102
-#define MVARS_ERROR         103
-#define EXPR_ERROR          104
-#define M_ERROR             105
-#define T_ERROR             106
-#define F_ERROR             107
-#define R_ERROR             108
-#define STATS_ERROR         109
-#define MSTATS_ERROR        110
-#define STAT_ERROR          111
-#define IN_ERROR            112
-#define OUT_ERROR           113
-#define IF_ERROR            114
-#define LOOP_ERROR          115
-#define ASSIGN_ERROR        116
-#define RO_ERROR            117
-//
-
 //************************
 // GLOBAL VARIABLES
 myToken t;      // note that t has {int tokenType, char tokenVal[bufLen] , int  tokenLine }
@@ -86,15 +60,43 @@ myToken t;      // note that t has {int tokenType, char tokenVal[bufLen] , int  
 #define vars_parse_code     202
 #define stats_parse_code    203
 #define mvars_parse_code    204
-
+#define scan_parse_code     205
+#define print_parse_code    206
+#define iff_parse_code      207
+#define loop_parse_code     208
+#define assign_parse_code   209
 #define get_next_token      299
+
+//FUNCTION PROTOTYPES
+int launch (int code, myScanner scanIt);
+void parser ( myScanner scanIt);
+int program_parse (myScanner scanIt);
+int block_parse (myScanner scanIt);
+int vars_parse (myScanner scanIt);
+int stats_parse (myScanner scanIt);
+int mvars_parse (myScanner scanIt);
+int scan_parse (myScanner scanIt);
+int print_parse (myScanner scanIt);
+int iff_parse (myScanner scanIt);
+int loop_parse (myScanner scanIt);
+int assign_parse (myScanner scanIt);
+int stat_parse (myScanner scanIt);
+int mStat_parse (myScanner scanIt);
+int expr_parse(myScanner scanIt);
+int expr_parse(myScanner scanIt);
+int M_parse(myScanner scanIt);
+int T_parse(myScanner scanIt);
+int F_parse(myScanner scanIt);
+int R_parse(myScanner scanIt);
+
 
 // AUX function
 int launch (int code, myScanner scanIt) {
     int temp = 0;
-    //get a token
+    //consume the matched token that calls the corresponding function
+    //get the next token
     if (hasTokenError (t = getToken(scanIt)) == 0 || strstr(t->tokenVal,"EOF")!=NULL) { // if there is no error
-        //call the function
+        //call the function, feel free to enable, disable or inject troubleshooting routines to these switches
        switch (code) {
             case 200:
                 temp = program_parse (scanIt);
@@ -106,10 +108,26 @@ int launch (int code, myScanner scanIt) {
                 temp = vars_parse (scanIt);
                 break;
             case 203:
-                //temp = stats_parse (scanIt);
+                temp = stats_parse (scanIt);
                 break;
             case 204:
                 temp = mvars_parse (scanIt);
+                break;
+            case 205:
+                temp = scan_parse (scanIt);
+                break;
+            case 206: 
+                temp = print_parse (scanIt);
+                break;
+            case 207:
+                temp = iff_parse (scanIt);
+                break;
+            case 208:
+                temp = loop_parse (scanIt);
+                break;
+            case 209:
+                temp = assign_parse (scanIt);
+                break;
             default :
                 break;
        }
@@ -140,18 +158,20 @@ void parser ( myScanner scanIt) {
 //1 if <var> is found
 //2 if <block> is found
 int program_parse (myScanner scanIt) {
-
+    int flag = 1;
     if (strstr(t->tokenVal,"Var")!=NULL) {                              // if 'Var' is found
-        launch (vars_parse_code, scanIt);                               //call vars_parse
+        if (launch (vars_parse_code, scanIt)==0) flag--;                //call vars_parse
     } 
     if (strstr(t->tokenVal,"Begin")!=NULL) {                            // if 'Begin' is found (no <vars> section)
-        launch (block_parse_code, scanIt);
+        if (launch (block_parse_code, scanIt)==0) flag--;
     } else
     {
         fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing main program. \n", t->tokenLine);
-        return 0;
+        flag--;
     }
-    return 1;
+    if (flag <=0) return 0;
+    else 
+        return 1;
 }
 
 
@@ -160,87 +180,468 @@ int program_parse (myScanner scanIt) {
 int block_parse (myScanner scanIt) {
     int flag = 1;
     if (strstr(t->tokenVal,"Var")!=NULL) {
-        flag = launch(vars_parse_code, scanIt);
+        if ( launch(vars_parse_code, scanIt)==0 ) flag--;
     }
     // if vars is all empty, then we check for <stats>
-    if (strstr(t->tokenVal,"Scan")!=NULL  || strstr(t->tokenVal,"Print")!=NULL  || 
-                strstr(t->tokenVal,"[")!=NULL  || strstr(t->tokenVal,"Loop")!=NULL  || 
-                strstr(t->tokenVal,"Begin")!=NULL || t->tokenType==idCode ) {
-        flag = launch (stats_parse_code, scanIt);   
-    }
-    // if found no <stats>, issue syntax error because <stats> can't be empty per given grammar
-    else
-    {
-        fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing the body of the main block. \n", t->tokenLine-1);
-        flag = 0;
-    }
+    //<stats>    ->      <stat>  <mStat>
+    // since <stat> is mandatory, in this step, we check members of <stat> 
+    //and call function accordingly, note that we check qualifying condition for a function
+    //before we call the function
+
+    if (stats_parse (scanIt)==0) flag--;                            //check for <stats>
     
     if (strstr(t->tokenVal,"End")==NULL)
     {
         fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Program has to be ended with an 'End'\n", t->tokenLine-1);
-        flag = 0;
+        flag --;
     }
     
-    return flag;    
+    if (flag <= 0) return 0;
+    else
+        return 1;
 }
 
 //<vars>     ->      empty | Var Identifier <mvars> 
 int vars_parse (myScanner scanIt) {
+    int flag = 1;
     if (t->tokenType == idCode) {
-        launch(mvars_parse_code, scanIt);
+        if (launch(mvars_parse_code, scanIt)==0) flag--;            // check for <mvars>
     } else
     {
         fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing the body of variable declairation. \n", t->tokenLine-1);
-        return 0;
+        flag--;
     }
-    return 1;
+    if (flag <= 0) return 0;
+    else
+        return 1;
 }
 
 //<mvars>    ->     empty | : : Identifier <mvars>
 int mvars_parse (myScanner scanIt) {
     int flag = 1;
     if (t->tokenType==otherCode && t->tokenVal[0]==':') {           //reconizing :
-        launch (get_next_token, scanIt);  
+        if (launch (get_next_token, scanIt)==0) flag--;  
         if (t->tokenType==otherCode && t->tokenVal[0]==':') {       //recognizing : : , note there is a space in between
-            launch (get_next_token, scanIt);
+            if (launch (get_next_token, scanIt)==0) flag--;
         }  else
         {
-            flag = 0;
+            flag--;
             fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing another ':' \n", t->tokenLine);
         }
     } else                                                          //if not there
     {
-        flag = 0;
+        flag--;
         if (t->tokenType!=keywordCode) fprintf(stderr, "[ERROR : line %d] Incorrect syntax of multiple variable declaration. \n", t->tokenLine);
     }
     
     if (t->tokenType == idCode) {
-        launch(mvars_parse_code, scanIt);                           // recognizing : : Identifier
+        if (launch(mvars_parse_code, scanIt)==0) flag--;                           // recognizing : : Identifier
     } else
     {
-        flag = 0;
+        flag--;
         if (t->tokenType!=keywordCode) fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing identifier. \n", t->tokenLine);
     }
 
-    return flag;
+    if (flag <= 0) return 0;
+    else
+        return 1;
 }
-//<expr>     ->      <M> + <expr> | <M>
-//<M>        ->     <T> - <M> | <T>
-//<T>        ->      <F> * <T> | <F> / <T> | <F>
-//<F>        ->      - <F> | <R>
-//<R>        ->      [ <expr> ] | Identifier | Number   
-//<stats>    ->      <stat>  <mStat>
+
 int stats_parse (myScanner scanIt) {
     
+    int flag = 1;
+    if (stat_parse (scanIt)==0) flag--;                                             // check for <stat>
+    else
+        if (mStat_parse (scanIt) ==0) flag--;                                       // check for <mStat>
+    //note that launch function is not used in these function calls
+    //no current token got consumed yet
+    if (flag <= 0) return 0;
+    else
+        return 1;
 }
+
 //<mStat>    ->      empty | <stat>  <mStat>
+int mStat_parse (myScanner scanIt) {
+    int flag = 1;
+    if (stat_parse(scanIt)==1) {
+        if (mStat_parse (scanIt)==0) flag--;
+    }
+    else
+    {
+        flag--;
+    }
+
+    if (flag <= 0) return 0;
+    else
+        return 1;
+}
+
 //<stat>     ->      <in> | <out> | <block> | <if> | <loop> | <assign>
+int stat_parse (myScanner scanIt) {
+    int flag = 1;
+    if (strstr(t->tokenVal,"Scan")!=NULL) {
+        if(launch (scan_parse_code, scanIt)==0) flag--;
+    }
+    else if (strstr(t->tokenVal,"Print")!=NULL) {
+        if(launch (print_parse_code, scanIt)==0) flag--;
+    }  
+    else if (strstr(t->tokenVal,"[")!=NULL) {
+        if(launch (iff_parse_code, scanIt)==0) flag--;
+    }
+    else if (strstr(t->tokenVal,"Loop")!=NULL) {
+        if(launch (loop_parse_code, scanIt)==0) flag--;
+    }
+    else if (strstr(t->tokenVal,"Begin")!=NULL) {
+        if(launch (block_parse_code, scanIt)==0) flag--;
+    }
+    else if (t->tokenType==idCode ) {
+        if(launch (assign_parse_code, scanIt)==0) flag--;
+    }
+    // if found no <stats>, issue syntax error because <stats> can't be empty per given grammar
+    else
+    {
+        fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing the body of <stat> block. \n", t->tokenLine-1);
+        flag --;
+    }
+    if (flag <= 0) return 0;
+    else
+        return 1;
+    
+}
 //<in>       ->      Scan : Identifier .
+int scan_parse (myScanner scanIt) {
+    int flag = 1;
+    
+    if (strstr(t->tokenVal,":")!=NULL) {
+        if(launch (get_next_token, scanIt)==0) flag--;
+    }
+    else
+    {
+        fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing ':'. \n", t->tokenLine-1);
+        flag --;
+    }
+
+    if (t->tokenType==idCode ) {
+        if(launch (get_next_token, scanIt)==0) flag--;
+    }
+    else
+    {
+        fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing identifier. \n", t->tokenLine-1);
+        flag --;
+    }
+    
+    if (strstr(t->tokenVal,".")!=NULL) {
+        if(launch (get_next_token, scanIt)==0) flag--;
+    }
+    else
+    {
+        fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing '.' \n", t->tokenLine-1);
+        flag --;
+    }
+    
+    if (flag <= 0) return 0;
+    else
+        return 1;
+}
 //<out>      ->      Print [ <expr>  ] .
-//<if>       ->      [ <expr> <RO> <expr> ]  Iff <block>             
+int print_parse (myScanner scanIt) {
+    int flag = 1;
+    if (strstr(t->tokenVal,"[")!=NULL) {
+        if(launch (get_next_token, scanIt)==0) flag--;
+    }
+    else
+    {
+        fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing '['. \n", t->tokenLine-1);
+        flag --;
+    }
+    
+    if (strstr(t->tokenVal,"-")!=NULL || strstr(t->tokenVal,"[")!=NULL || t->tokenType==idCode || t->tokenType==intCode) {
+        if(expr_parse(scanIt)==0) flag--;
+    }
+    else
+    {
+        fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing <expr>. \n", t->tokenLine-1);
+        flag --;
+    }
+    
+    if (strstr(t->tokenVal,"]")!=NULL) {
+        if(launch (get_next_token, scanIt)==0) flag--;
+    }
+    else
+    {
+        fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing ']'. \n", t->tokenLine-1);
+        flag --;
+    }
+    
+    if (strstr(t->tokenVal,".")!=NULL) {
+        if(launch (get_next_token, scanIt)==0) flag--;
+    }
+    else
+    {
+        fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing '.' \n", t->tokenLine-1);
+        flag --;
+    }
+    if (flag <= 0) return 0;
+    else
+        return 1;
+}
+
+//<if>       ->      [ <expr> <RO> <expr> ]  Iff <block> 
+int iff_parse (myScanner scanIt) {
+    int flag = 1;
+    
+                                                            //check for <expr>
+    if (strstr(t->tokenVal,"-")!=NULL || strstr(t->tokenVal,"[")!=NULL || t->tokenType==idCode || t->tokenType==intCode) {
+        if(expr_parse(scanIt)==0) flag--;
+    }
+    else
+    {
+        fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing <expr>. \n", t->tokenLine-1);
+        flag --;
+    }
+                                                            //check for <RO>    
+    if (t->tokenType==relCode ) {
+        if(launch (get_next_token, scanIt)==0) flag--;
+    }
+    else
+    {
+        fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing relational symbol. \n", t->tokenLine-1);
+        flag --;
+    }   
+                                                            //check for another <expr>
+    if (strstr(t->tokenVal,"-")!=NULL || strstr(t->tokenVal,"[")!=NULL || t->tokenType==idCode || t->tokenType==intCode) {
+        if(expr_parse(scanIt)==0) flag--;
+    }
+    else
+    {
+        fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing <expr>. \n", t->tokenLine-1);
+        flag --;
+    }
+                                                            //check for ']'
+    if (strstr(t->tokenVal,"]")!=NULL) {
+        if(launch (get_next_token, scanIt)==0) flag--;
+    }
+    else
+    {
+        fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing ']'. \n", t->tokenLine-1);
+        flag --;
+    }
+                                                            //check for Iff
+    if (strstr(t->tokenVal,"Iff")!=NULL) {
+        if(launch (get_next_token, scanIt)==0) flag--;
+    }
+    else
+    {
+        fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing 'Iff'. \n", t->tokenLine-1);
+        flag --;
+    }
+    if (strstr(t->tokenVal,"Begin")!=NULL) {                            // if 'Begin' is found (no <vars> section)
+        if (launch (block_parse_code, scanIt)==0) flag--;
+    } else
+    {
+        fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing <block>. \n", t->tokenLine);
+        flag--;
+    }
+    if (flag <= 0) return 0;
+    else
+        return 1;
+}            
 //<loop>     ->      Loop [ <expr> <RO> <expr> ] <block>
+int loop_parse (myScanner scanIt) {
+    int flag = 1;
+    
+                                                            //check for <expr>
+    if (strstr(t->tokenVal,"-")!=NULL || strstr(t->tokenVal,"[")!=NULL || t->tokenType==idCode || t->tokenType==intCode) {
+        if(expr_parse(scanIt)==0) flag--;
+    }
+    else
+    {
+        fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing <expr>. \n", t->tokenLine-1);
+        flag --;
+    }
+                                                            //check for <RO>    
+    if (t->tokenType==relCode ) {
+        if(launch (get_next_token, scanIt)==0) flag--;
+    }
+    else
+    {
+        fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing relational symbol. \n", t->tokenLine-1);
+        flag --;
+    }   
+                                                            //check for another <expr>
+    if (strstr(t->tokenVal,"-")!=NULL || strstr(t->tokenVal,"[")!=NULL || t->tokenType==idCode || t->tokenType==intCode) {
+        if(expr_parse(scanIt)==0) flag--;
+    }
+    else
+    {
+        fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing <expr>. \n", t->tokenLine-1);
+        flag --;
+    }
+                                                            //check for ']'
+    if (strstr(t->tokenVal,"]")!=NULL) {
+        if(launch (get_next_token, scanIt)==0) flag--;
+    }
+    else
+    {
+        fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing ']'. \n", t->tokenLine-1);
+        flag --;
+    }
+    if (strstr(t->tokenVal,"Begin")!=NULL) {                  // if 'Begin' is found (no <vars> section)
+        if (launch (block_parse_code, scanIt)==0) flag--;
+    } else
+    {
+        fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing <block>. \n", t->tokenLine);
+        flag--;
+    }
+    if (flag <= 0) return 0;
+    else
+        return 1;
+}
+
 //<assign>   ->      Identifier == <expr> .                   // == is one token here
-//<RO>       ->      >=> | <=< | = |  > | <  |  =!=           // each is one token here
+int assign_parse (myScanner scanIt) {
+    int flag = 1;
+    if (strstr(t->tokenVal,"==")!=NULL) {
+        if(launch (get_next_token, scanIt)==0) flag--;
+    }
+    else
+    {
+        fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing '=='. \n", t->tokenLine-1);
+        flag --;
+    }
+    
+    if (strstr(t->tokenVal,"-")!=NULL || strstr(t->tokenVal,"[")!=NULL || t->tokenType==idCode || t->tokenType==intCode) {
+        if(expr_parse(scanIt)==0) flag--;
+    }
+    else
+    {
+        fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing <expr>. \n", t->tokenLine-1);
+        flag --;
+    }
+    
+    if (strstr(t->tokenVal,".")!=NULL) {
+        if(launch (get_next_token, scanIt)==0) flag--;
+    }
+    else
+    {
+        fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing '.' \n", t->tokenLine-1);
+        flag --;
+    }
+    if (flag <= 0) return 0;
+    else
+        return 1;
+}
+
+//<expr>     ->      <M> + <expr> | <M>
+//expr is a wrapper
+int expr_parse(myScanner scanIt) {
+    int flag = 1;
+    
+    if(M_parse(scanIt)==1){
+        if(launch (get_next_token, scanIt)==0) flag--;
+    }
+    else flag--;
+    
+    if (strstr(t->tokenVal,"+")!=NULL) {
+        if(launch (get_next_token, scanIt)==0) flag--;
+        if(expr_parse(scanIt)==0) flag--;
+    }
+    
+    if (flag <= 0) return 0;
+    else
+        return 1;    
+}
+
+//<M>        ->     <T> - <M> | <T>
+int M_parse(myScanner scanIt) {
+    int flag = 1;
+
+    if(T_parse(scanIt)==1){
+        if(launch (get_next_token, scanIt)==0) flag--;
+    }
+    else flag--;
+    
+    if (strstr(t->tokenVal,"-")!=NULL) {
+        if(launch (get_next_token, scanIt)==0) flag--;
+        if(M_parse(scanIt)==0) flag--;
+    }
+    
+    if (flag <= 0) return 0;
+    else
+        return 1;    
+}
+//<T>        ->      <F> * <T> | <F> / <T> | <F>
+int T_parse(myScanner scanIt) {
+    int flag = 1;
+
+    if(F_parse(scanIt)==1){
+        if(launch (get_next_token, scanIt)==0) flag--;
+    }
+    else flag--;
+    
+    if (strstr(t->tokenVal,"*")!=NULL || strstr(t->tokenVal,"/")!=NULL) {
+        if(launch (get_next_token, scanIt)==0) flag--;
+        if(F_parse(scanIt)==0) flag--;
+    }
+    
+    if (flag <= 0) return 0;
+    else
+        return 1;    
+}
+//<F>        ->      - <F> | <R>
+int F_parse(myScanner scanIt) {
+    int flag = 1;
+
+    if (strstr(t->tokenVal,"-")!=NULL) {
+        if(launch (get_next_token, scanIt)==0) flag--;
+        if(F_parse(scanIt)==0) flag--;
+    } else {
+        if(R_parse(scanIt)==0) flag--;
+    }
+    
+    if (flag <= 0) return 0;
+    else
+        return 1;    
+}
+//<R>        ->      [ <expr> ] | Identifier | Number   
+int R_parse(myScanner scanIt) {
+    int flag = 1;
+    if (t->tokenType==idCode || t->tokenType==intCode) {
+        if(launch (get_next_token, scanIt)==0) flag--;
+    }
+    else {
+        if (strstr(t->tokenVal,"[")!=NULL) {
+            if(launch (get_next_token, scanIt)==0) flag--;
+        }
+        else
+        {
+            fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing '['. \n", t->tokenLine-1);
+            flag --;
+        }
+        
+        if (strstr(t->tokenVal,"-")!=NULL || strstr(t->tokenVal,"[")!=NULL || t->tokenType==idCode || t->tokenType==intCode) {
+            if(expr_parse(scanIt)==0) flag--;
+        }
+        else
+        {
+            fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing <expr>. \n", t->tokenLine-1);
+            flag --;
+        }
+        
+        if (strstr(t->tokenVal,"]")!=NULL) {
+            if(launch (get_next_token, scanIt)==0) flag--;
+        }
+        else
+        {
+            fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing ']'. \n", t->tokenLine-1);
+            flag --;
+        }
+    }
+    if (flag <= 0) return 0;
+    else
+        return 1;    
+}
+
 //************************
 
 
