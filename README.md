@@ -1,4 +1,4 @@
-# simpleParser using automaton driver table
+# FULL SCANNER IMPLEMENTATION
 Author: Tam N Nguyen
 
 ## Execution
