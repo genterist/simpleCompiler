@@ -8,7 +8,7 @@ endif
 endif
 
 CC = gcc
-OUT_PROG = parser
+OUT_PROG = testFrontEnd
 TEST_PROG = testScanner
 
 # Add inputs and outputs from these tool invocations to the build variables 
