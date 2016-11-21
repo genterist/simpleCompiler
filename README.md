@@ -43,7 +43,7 @@ EOF is recommended to be on a new line in programming text (a blank line at the 
 
 ## The parsed tree of test case (test2 file)
 ![parsed bnTree]
-(https://github.com/genterist/simpleParser/blob/master/ParserBNTree.png)
+(https://github.com/genterist/simpleParser/blob/master/ParserBNTree-2.png)
 
 ## Lexical Definitions
 - All case sensitive
