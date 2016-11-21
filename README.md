@@ -41,6 +41,10 @@ EOF is recommended to be on a new line in programming text (a blank line at the 
 - Parsed results will be added into a binary tree
 - Parsing is done left to right
 
+## The parsed tree of test case (test2 file)
+![parsed bnTree]
+(https://github.com/genterist/simpleParser/blob/master/ParserBNTree.png)
+
 ## Lexical Definitions
 - All case sensitive
 - Each scanner error should display the error message after "Scanner Error:"
