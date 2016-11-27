@@ -22,6 +22,6 @@
 // FUNCTION PROTOTYPES
 
 void parser ( myScanner scanIt );
-int launch (int code, myScanner scanIt );
+int launch (int code, myScanner scanIt, Treeptr parent_node );
 
 #endif

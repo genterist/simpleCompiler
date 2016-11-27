@@ -10,6 +10,7 @@ endif
 CC = gcc
 OUT_PROG = testFrontEnd
 TEST_PROG = testScanner
+DATA_FILE = parseResult
 
 # Add inputs and outputs from these tool invocations to the build variables 
 
@@ -31,7 +32,7 @@ test: $(OBJS) $(USER_OBJS)
 
 # Other Targets
 clean:
-	-$(RM) $(EXECUTABLES)$(OBJS)$(C_DEPS) $(OUT_PROG) $(TEST_PROG)
+	-$(RM) $(EXECUTABLES)$(OBJS)$(C_DEPS) $(OUT_PROG) $(TEST_PROG) $(DATA_FILE)
 	-@echo ' '
 
 .PHONY: all clean dependents

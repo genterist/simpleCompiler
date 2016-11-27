@@ -26,6 +26,22 @@ Treeptr insertNewNode(char data[25], Treeptr parent_node){
 	return newNode;
 }
 
+Treeptr buildTree(char data[25], Treeptr parent_node){
+	Treeptr tempNode;
+	if(parent_node==NULL){               //if the current spot root
+		parent_node=insertNewNode(data, parent_node);
+	} else {
+	    if (parent_node->left.data == NULL){
+	        parent_node->left = buildTree (parent_node->left, data, );
+	        tempNode = parent_node->left;
+	    } else if (parent_node->right.data == NULL){
+	        parent_node->right = buildTree (parent_node->right, data, );
+	        tempNode = parent_node->right;
+	    } else tempNode =  parent_node;
+	}
+	return tempNode;
+}
+/*
 Treeptr buildTree(Treeptr root, char data[25], Treeptr parent_node){
 	if(root==NULL){
 		root=insertNewNode(data, parent_node);
@@ -37,5 +53,4 @@ Treeptr buildTree(Treeptr root, char data[25], Treeptr parent_node){
 		root->count +=1;
 	}
 	return root;
-}
-
+}*/

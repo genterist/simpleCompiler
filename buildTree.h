@@ -26,6 +26,6 @@ struct BSTNode{
 Treeptr theTree;
 //--
 
-Treeptr buildTree(Treeptr , char data[25], Treeptr );
+Treeptr buildTree(char data[25], Treeptr );
 
 #endif /* BUILDTREE_H_ */

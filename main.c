@@ -35,8 +35,6 @@ int main(int argc, char *argv[])
 {
     myScanner scanIt;                      // init scanner
                                            //init tree
-
-	//myBNTree = NULL;
     
 	char *prog = argv[0];                  // capture program name here
 
