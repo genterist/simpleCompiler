@@ -1,12 +1,5 @@
-Program
-myIdentifier
+Begin
+    Var a
+    Scan a .
 
-=  <  >  =!=    >=>  <=<
-Begin End Start Stop Iff Loop Void Var Int Call Return Scan Print
-a == :  +  -  *  / & %
-
-  . (  ) , { } ; [ ]
-  
-  21343
-
-@and.end.with.WS
+End

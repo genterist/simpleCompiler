@@ -31,11 +31,11 @@ Treeptr buildTree(char data[25], Treeptr parent_node){
 	if(parent_node==NULL){               //if the current spot root
 		parent_node=insertNewNode(data, parent_node);
 	} else {
-	    if (parent_node->left.data == NULL){
-	        parent_node->left = buildTree (parent_node->left, data, );
+	    if (parent_node->left == NULL){
+	        parent_node->left = buildTree (parent_node->left, data );
 	        tempNode = parent_node->left;
-	    } else if (parent_node->right.data == NULL){
-	        parent_node->right = buildTree (parent_node->right, data, );
+	    } else if (parent_node->right == NULL){
+	        parent_node->right = buildTree (parent_node->right, data );
 	        tempNode = parent_node->right;
 	    } else tempNode =  parent_node;
 	}
