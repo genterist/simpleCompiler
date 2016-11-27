@@ -155,17 +155,15 @@ void parser ( myScanner scanIt ) {
 
 //<program>  ->     <vars> <block>
 //Return 0 if no <vars> or <block> found
-//1 if <var> is found
-//2 if <block> is found
 int program_parse (myScanner scanIt ) {
     theTree= buildTree("<program>", NULL);
-    Treeptr parentNode = theTree;                                           // note that theTree is global
+    Treeptr currentNode = theTree;
     int flag = 1;
     if (strstr(t->tokenVal,"Var")!=NULL) {                              // if 'Var' is found
-        if (launch (vars_parse_code, scanIt, parentNode)==0) flag--;                //call vars_parse
+        if (launch (vars_parse_code, scanIt, currentNode)==0) flag--;                //call vars_parse
     } 
     if (strstr(t->tokenVal,"Begin")!=NULL) {                            // if 'Begin' is found (no <vars> section)
-        if (launch (block_parse_code, scanIt, parentNode)==0) flag--;
+        if (launch (block_parse_code, scanIt, currentNode)==0) flag--;
     } else
     {
         fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing main program. \n", t->tokenLine);
@@ -180,7 +178,8 @@ int program_parse (myScanner scanIt ) {
 //<block>    ->      Begin <vars> <stats> End
 //return 1 if success, 0 if there's an error
 int block_parse (myScanner scanIt, Treeptr parentNode ) {
-    theTree= buildTree( "<block>", NULL);
+    Treeptr currentNode;
+    //if (parentNode != NULL) currentNode = buildTree("<block>", parentNode);
     int flag = 1;
     if (strstr(t->tokenVal,"Var")!=NULL) {
         if ( launch(vars_parse_code, scanIt, NULL)==0 ) flag--;
@@ -206,7 +205,7 @@ int block_parse (myScanner scanIt, Treeptr parentNode ) {
 
 //<vars>     ->      empty | Var Identifier <mvars> 
 int vars_parse (myScanner scanIt, Treeptr parentNode ) {
-    theTree= buildTree( "<vars>", NULL);
+    //theTree= buildTree( "<vars>", NULL);
     int flag = 1;
     if (t->tokenType == idCode) {
         if (launch(mvars_parse_code, scanIt, NULL)==0) flag--;            // check for <mvars>
@@ -222,7 +221,7 @@ int vars_parse (myScanner scanIt, Treeptr parentNode ) {
 
 //<mvars>    ->     empty | : : Identifier <mvars>
 int mvars_parse (myScanner scanIt, Treeptr parentNode ) {
-    theTree= buildTree( "<mvars>", NULL);
+    //theTree= buildTree( "<mvars>", NULL);
     int flag = 1;
     if (t->tokenType==otherCode && t->tokenVal[0]==':') {           //reconizing :
         if (launch (get_next_token, scanIt, NULL)==0) flag--;  
@@ -254,7 +253,7 @@ int mvars_parse (myScanner scanIt, Treeptr parentNode ) {
 
 //<stats>    ->      <stat>  <mStat>
 int stats_parse (myScanner scanIt, Treeptr parentNode ) {
-    theTree= buildTree( "<stats>", NULL);
+    //theTree= buildTree( "<stats>", NULL);
     int flag = 1;
     if (stat_parse (scanIt, NULL)==0) flag--;                                             // check for <stat>
     if (mStat_parse (scanIt, NULL) ==0) flag--;                                       // check for <mStat>
@@ -267,7 +266,7 @@ int stats_parse (myScanner scanIt, Treeptr parentNode ) {
 
 //<mStat>    ->      empty | <stat>  <mStat>
 int mStat_parse (myScanner scanIt, Treeptr parentNode ) {
-    theTree= buildTree( "<mStat>", NULL);
+    //theTree= buildTree( "<mStat>", NULL);
     int flag = 1;
     if (stat_parse(scanIt, NULL)==1) {
         fprintf(stderr, "[XXX]\n");
@@ -285,7 +284,7 @@ int mStat_parse (myScanner scanIt, Treeptr parentNode ) {
 
 //<stat>     ->      <in> | <out> | <block> | <if> | <loop> | <assign>
 int stat_parse (myScanner scanIt, Treeptr parentNode ) {
-    theTree= buildTree( "<stat>", NULL);
+    //theTree= buildTree( "<stat>", NULL);
     int flag = 0;
     if (strstr(t->tokenVal,"Scan")!=NULL) {
         flag++;
@@ -323,7 +322,7 @@ int stat_parse (myScanner scanIt, Treeptr parentNode ) {
 }
 //<in>       ->      Scan : Identifier .
 int scan_parse (myScanner scanIt, Treeptr parentNode ) {
-    theTree= buildTree( "<in>", NULL);
+    //theTree= buildTree( "<in>", NULL);
     int flag = 1;
     
     if (strstr(t->tokenVal,":")!=NULL) {
@@ -359,7 +358,7 @@ int scan_parse (myScanner scanIt, Treeptr parentNode ) {
 }
 //<out>      ->      Print [ <expr>  ] .
 int print_parse (myScanner scanIt, Treeptr parentNode ) {
-    theTree= buildTree( "<out>", NULL);
+    //theTree= buildTree( "<out>", NULL);
     int flag = 1;
     if (strstr(t->tokenVal,"[")!=NULL) {
         if(launch (get_next_token, scanIt, NULL)==0) flag--;
@@ -403,7 +402,7 @@ int print_parse (myScanner scanIt, Treeptr parentNode ) {
 
 //<if>       ->      [ <expr> <RO> <expr> ]  Iff <block> 
 int iff_parse (myScanner scanIt, Treeptr parentNode ) {
-    theTree= buildTree( "<if>", NULL);
+    //theTree= buildTree( "<if>", NULL);
     int flag = 1;
     
                                                             //check for <expr>
@@ -464,7 +463,7 @@ int iff_parse (myScanner scanIt, Treeptr parentNode ) {
 }            
 //<loop>     ->      Loop [ <expr> <RO> <expr> ] <block>
 int loop_parse (myScanner scanIt, Treeptr parentNode ) {
-    theTree= buildTree( "<loop>", NULL);
+    //theTree= buildTree( "<loop>", NULL);
     int flag = 1;
     
                                                             //check for <expr>
@@ -517,7 +516,7 @@ int loop_parse (myScanner scanIt, Treeptr parentNode ) {
 
 //<assign>   ->      Identifier == <expr> .                   // == is one token here
 int assign_parse (myScanner scanIt, Treeptr parentNode ) {
-    theTree= buildTree( "<assign>", NULL);
+    //theTree= buildTree( "<assign>", NULL);
     int flag = 1;
     if (strstr(t->tokenVal,"==")!=NULL) {
         if(launch (get_next_token, scanIt, NULL)==0) flag--;
@@ -553,7 +552,7 @@ int assign_parse (myScanner scanIt, Treeptr parentNode ) {
 //<expr>     ->      <M> + <expr> | <M>
 //expr is a wrapper
 int expr_parse(myScanner scanIt, Treeptr parentNode ) {
-    theTree= buildTree( "<expr>", NULL);
+    //theTree= buildTree( "<expr>", NULL);
     int flag = 1;
     
     if(M_parse(scanIt, NULL)==1){
@@ -573,7 +572,7 @@ int expr_parse(myScanner scanIt, Treeptr parentNode ) {
 
 //<M>        ->     <T> - <M> | <T>
 int M_parse(myScanner scanIt, Treeptr parentNode ) {
-    theTree= buildTree( "<M>", NULL);
+    //theTree= buildTree( "<M>", NULL);
     int flag = 1;
 
     if(T_parse(scanIt, NULL)==1){
@@ -592,7 +591,7 @@ int M_parse(myScanner scanIt, Treeptr parentNode ) {
 }
 //<T>        ->      <F> * <T> | <F> / <T> | <F>
 int T_parse(myScanner scanIt, Treeptr parentNode ) {
-    theTree= buildTree( "<T>", NULL);
+    //theTree= buildTree( "<T>", NULL);
     int flag = 1;
 
     if(F_parse(scanIt, NULL)==1){
@@ -611,7 +610,7 @@ int T_parse(myScanner scanIt, Treeptr parentNode ) {
 }
 //<F>        ->      - <F> | <R>
 int F_parse(myScanner scanIt, Treeptr parentNode ) {
-    theTree= buildTree( "<F>", NULL);
+    //theTree= buildTree( "<F>", NULL);
     int flag = 1;
 
     if (strstr(t->tokenVal,"-")!=NULL) {
@@ -627,7 +626,7 @@ int F_parse(myScanner scanIt, Treeptr parentNode ) {
 }
 //<R>        ->      [ <expr> ] | Identifier | Number   
 int R_parse(myScanner scanIt, Treeptr parentNode ) {
-    theTree= buildTree( "<R>", NULL);
+    //theTree= buildTree( "<R>", NULL);
     int flag = 1;
     if (t->tokenType==idCode || t->tokenType==intCode) {
         if(launch (get_next_token, scanIt, NULL)==0) flag--;

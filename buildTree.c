@@ -32,10 +32,10 @@ Treeptr buildTree(char data[25], Treeptr parent_node){
 		parent_node=insertNewNode(data, parent_node);
 	} else {
 	    if (parent_node->left == NULL){
-	        parent_node->left = buildTree (parent_node->left, data );
+	        parent_node->left = insertNewNode (data, parent_node );
 	        tempNode = parent_node->left;
 	    } else if (parent_node->right == NULL){
-	        parent_node->right = buildTree (parent_node->right, data );
+	        parent_node->right = insertNewNode (data, parent_node );
 	        tempNode = parent_node->right;
 	    } else tempNode =  parent_node;
 	}

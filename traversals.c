@@ -72,6 +72,7 @@ void TravPreOrder (Treeptr node, int level, const char *filename){
 		TravPreOrder(node->left, theLevel+1,filename);
 		TravPreOrder(node->right, theLevel+1,filename);
 	}
+	
 }
 
 void TravPostOrder (Treeptr node, int level, const char *filename){
