@@ -53,6 +53,7 @@
 //************************
 // GLOBAL VARIABLES
 myToken t;      // note that t has {int tokenType, char tokenVal[bufLen] , int  tokenLine }
+Treeptr tempTreeNode;
 
 
 //FUNCTION CODE
@@ -69,8 +70,8 @@ myToken t;      // note that t has {int tokenType, char tokenVal[bufLen] , int  
 #define get_next_token      299
 
 //FUNCTION PROTOTYPES
-void parser ( myScanner scanIt );
-int program_parse (myScanner scanIt );
+void parser ( myScanner scanIt, Treeptr aTree );
+int program_parse (myScanner scanIt, Treeptr aTree );
 int block_parse (myScanner scanIt, Treeptr parentNode );
 int vars_parse (myScanner scanIt,  Treeptr parentNode );
 int stats_parse (myScanner scanIt,  Treeptr parentNode );
@@ -99,7 +100,7 @@ int launch (int code, myScanner scanIt, Treeptr parentNode ) {
         //call the function, feel free to enable, disable or inject troubleshooting routines to these switches
        switch (code) {
             case 200:
-                temp = program_parse (scanIt);
+                temp = program_parse (scanIt, parentNode);
                 break;
             case 201:
                 temp = block_parse (scanIt, parentNode);
@@ -141,9 +142,9 @@ int launch (int code, myScanner scanIt, Treeptr parentNode ) {
 //************************
 // FUNCTION IMPLEMENTATIONS
 
-void parser ( myScanner scanIt ) {
+void parser ( myScanner scanIt, Treeptr aTree ) {
     
-    launch (program_parse_code, scanIt, NULL);
+    launch (program_parse_code, scanIt, aTree);
 
     if (t->tokenType == eofCode) {
         fprintf(stderr, "[EOF] Parsing reached the end of file.\n");
@@ -155,15 +156,15 @@ void parser ( myScanner scanIt ) {
 
 //<program>  ->     <vars> <block>
 //Return 0 if no <vars> or <block> found
-int program_parse (myScanner scanIt ) {
-    theTree= buildTree("<program>", NULL);
-    Treeptr currentNode = theTree;
+int program_parse (myScanner scanIt, Treeptr aTree ) {
+    aTree= buildTree("<program>", NULL);
+    aTree= buildTree("<program>", NULL);
     int flag = 1;
     if (strstr(t->tokenVal,"Var")!=NULL) {                              // if 'Var' is found
-        if (launch (vars_parse_code, scanIt, currentNode)==0) flag--;                //call vars_parse
+        if (launch (vars_parse_code, scanIt, aTree)==0) flag--;                //call vars_parse
     } 
     if (strstr(t->tokenVal,"Begin")!=NULL) {                            // if 'Begin' is found (no <vars> section)
-        if (launch (block_parse_code, scanIt, currentNode)==0) flag--;
+        if (launch (block_parse_code, scanIt, aTree)==0) flag--;
     } else
     {
         fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing main program. \n", t->tokenLine);
@@ -178,8 +179,7 @@ int program_parse (myScanner scanIt ) {
 //<block>    ->      Begin <vars> <stats> End
 //return 1 if success, 0 if there's an error
 int block_parse (myScanner scanIt, Treeptr parentNode ) {
-    Treeptr currentNode;
-    //if (parentNode != NULL) currentNode = buildTree("<block>", parentNode);
+    tempTreeNode = buildTree("<block>", parentNode);
     int flag = 1;
     if (strstr(t->tokenVal,"Var")!=NULL) {
         if ( launch(vars_parse_code, scanIt, NULL)==0 ) flag--;
