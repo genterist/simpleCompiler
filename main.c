@@ -47,12 +47,13 @@ int main(int argc, char *argv[])
 	  else
 	    { scanIt = scanByStream(stdin);}   // if file name not specified, read from input stream
 	
-    parser(scanIt);
-    //TravPreOrder(theTree, 0, "parse_Result");
-	//clearScanner (scanIt);
+    parser(scanIt, theTree);
+    TravPreOrder(theTree, 0, "parse_Result");
+	clearScanner (scanIt);
 	/*
 	Treeptr temp;
-	theTree= buildTree("<p0>", NULL);
+	theTree= buildTree("<p0>", theTree);
+	theTree= buildTree("<p0>", theTree);
 	temp = buildTree("<p1>", theTree);
 	buildTree("<p11>", temp);
 	buildTree("<p12>", temp);

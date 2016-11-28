@@ -22,14 +22,15 @@ Treeptr insertNewNode(char data[25], Treeptr parent_node){
 	strcpy(newNode->data,data);
 	newNode->count=1;
 	newNode->left=newNode->right=NULL;
-	newNode->parent = parent_node;
+	if (parent_node == NULL) newNode->parent = NULL;
+	else newNode->parent = parent_node;
 	return newNode;
 }
 
 Treeptr buildTree(char data[25], Treeptr parent_node){
 	Treeptr tempNode;
 	if(parent_node==NULL){               //if the current spot root
-		parent_node=insertNewNode(data, parent_node);
+		theTree=insertNewNode(data, NULL);
 	} else {
 	    if (parent_node->left == NULL){
 	        parent_node->left = insertNewNode (data, parent_node );
