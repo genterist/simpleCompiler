@@ -24,6 +24,7 @@ struct BSTNode{
 };
 
 Treeptr theTree;
+Treeptr tempTreeNode;
 //--
 
 Treeptr buildTree(char data[25], Treeptr );

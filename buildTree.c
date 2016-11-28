@@ -30,7 +30,8 @@ Treeptr insertNewNode(char data[25], Treeptr parent_node){
 Treeptr buildTree(char data[25], Treeptr parent_node){
 	Treeptr tempNode;
 	if(parent_node==NULL){               //if the current spot root
-		theTree=insertNewNode(data, NULL);
+		theTree=insertNewNode(data, theTree);
+		tempNode = theTree;
 	} else {
 	    if (parent_node->left == NULL){
 	        parent_node->left = insertNewNode (data, parent_node );

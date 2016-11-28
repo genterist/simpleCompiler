@@ -53,7 +53,6 @@
 //************************
 // GLOBAL VARIABLES
 myToken t;      // note that t has {int tokenType, char tokenVal[bufLen] , int  tokenLine }
-Treeptr tempTreeNode;
 
 
 //FUNCTION CODE
@@ -157,8 +156,8 @@ void parser ( myScanner scanIt, Treeptr aTree ) {
 //<program>  ->     <vars> <block>
 //Return 0 if no <vars> or <block> found
 int program_parse (myScanner scanIt, Treeptr aTree ) {
-    aTree= buildTree("<program>", NULL);
-    aTree= buildTree("<program>", NULL);
+    fprintf(stderr, "build root.\n");
+    aTree= buildTree("<program>", aTree);
     int flag = 1;
     if (strstr(t->tokenVal,"Var")!=NULL) {                              // if 'Var' is found
         if (launch (vars_parse_code, scanIt, aTree)==0) flag--;                //call vars_parse
@@ -179,10 +178,11 @@ int program_parse (myScanner scanIt, Treeptr aTree ) {
 //<block>    ->      Begin <vars> <stats> End
 //return 1 if success, 0 if there's an error
 int block_parse (myScanner scanIt, Treeptr parentNode ) {
-    tempTreeNode = buildTree("<block>", parentNode);
+    Treeptr tempNode;
+    tempNode = buildTree("<block>", parentNode);
     int flag = 1;
     if (strstr(t->tokenVal,"Var")!=NULL) {
-        if ( launch(vars_parse_code, scanIt, NULL)==0 ) flag--;
+        if ( launch(vars_parse_code, scanIt, tempNode)==0 ) flag--;
     }
     // if vars is all empty, then we check for <stats>
     //<stats>    ->      <stat>  <mStat>
@@ -190,7 +190,7 @@ int block_parse (myScanner scanIt, Treeptr parentNode ) {
     //and call function accordingly, note that we check qualifying condition for a function
     //before we call the function
 
-    if (stats_parse (scanIt, NULL)==0) flag--;                            //check for <stats>
+    if (stats_parse (scanIt, tempNode)==0) flag--;                            //check for <stats>
     
     if (strstr(t->tokenVal,"End")==NULL)
     {
@@ -205,10 +205,11 @@ int block_parse (myScanner scanIt, Treeptr parentNode ) {
 
 //<vars>     ->      empty | Var Identifier <mvars> 
 int vars_parse (myScanner scanIt, Treeptr parentNode ) {
-    //theTree= buildTree( "<vars>", NULL);
+    Treeptr tempNode;
+    tempNode = buildTree( "<vars>", parentNode);
     int flag = 1;
     if (t->tokenType == idCode) {
-        if (launch(mvars_parse_code, scanIt, NULL)==0) flag--;            // check for <mvars>
+        if (launch(mvars_parse_code, scanIt, tempNode)==0) flag--;            // check for <mvars>
     } else
     {
         fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing the body of variable declairation. \n", t->tokenLine-1);
