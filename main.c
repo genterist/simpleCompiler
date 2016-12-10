@@ -50,24 +50,6 @@ int main(int argc, char *argv[])
     parser(scanIt, theTree);
     TravPreOrder(theTree, 0, "parse_Result");
     clearScanner (scanIt);
-	/*
-	void func1 (Treeptr aTreeNode){
-	    //printf("%s:%d \n", aTree->data, aTree->count);
-	    Treeptr temp;
-	    temp = buildTree("<p1>", aTreeNode);
-	    buildTree("<p11>", temp);
-	    buildTree("<p12>", temp);
-	}
-	void func0 (Treeptr aTree){
-	   aTree = buildTree("<p0>", aTree);
-	   //fprintf(stderr, "%s \n", aTree->data);
-	   func1 (aTree);
-   }
 
-	//buildTree("<p2>", theTree);
-	
-	func0 (theTree);
-	TravPreOrder(theTree, 0, "parse_Result");
-	*/
 	return EXIT_SUCCESS;
 }

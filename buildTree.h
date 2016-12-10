@@ -17,6 +17,7 @@
 typedef struct BSTNode* Treeptr;
 struct BSTNode{
 	char data[25];
+	char value[25];
 	int count;
 	Treeptr left;
 	Treeptr right;
@@ -27,6 +28,6 @@ Treeptr theTree;
 Treeptr tempTreeNode;
 //--
 
-Treeptr buildTree(char data[25], Treeptr );
+Treeptr buildTree(char data[25], char value[25], Treeptr );
 
 #endif /* BUILDTREE_H_ */

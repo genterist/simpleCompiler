@@ -2,8 +2,7 @@ Var a : : b
 
 Begin
     Var c
-    Scan : a .
+    Scan : a . 
     Scan : b .
 
 End
-

@@ -17,42 +17,31 @@
 
 
 
-Treeptr insertNewNode(char data[25], Treeptr parent_node){
+Treeptr insertNewNode(char data[25], char value [25], Treeptr parent_node){
 	Treeptr newNode = (Treeptr) malloc(sizeof(struct BSTNode));
 	strcpy(newNode->data,data);
-	newNode->count=1;
+	strcpy(newNode->value,value);
+	if (parent_node==NULL) newNode->count=1;
+	else newNode->count = parent_node->count + 1;
 	newNode->left=newNode->right=NULL;
 	if (parent_node == NULL) newNode->parent = NULL;
 	else newNode->parent = parent_node;
 	return newNode;
 }
 
-Treeptr buildTree(char data[25], Treeptr parent_node){
+Treeptr buildTree(char data[25], char value[25], Treeptr parent_node){
 	Treeptr tempNode;
 	if(parent_node==NULL){               //if the current spot root
-		theTree=insertNewNode(data, theTree);
+		theTree=insertNewNode(data, value, theTree);
 		tempNode = theTree;
 	} else {
 	    if (parent_node->left == NULL){
-	        parent_node->left = insertNewNode (data, parent_node );
+	        parent_node->left = insertNewNode (data, value, parent_node );
 	        tempNode = parent_node->left;
 	    } else if (parent_node->right == NULL){
-	        parent_node->right = insertNewNode (data, parent_node );
+	        parent_node->right = insertNewNode (data, value, parent_node );
 	        tempNode = parent_node->right;
 	    } else tempNode =  parent_node;
 	}
 	return tempNode;
 }
-/*
-Treeptr buildTree(Treeptr root, char data[25], Treeptr parent_node){
-	if(root==NULL){
-		root=insertNewNode(data, parent_node);
-	} else if((int)data< (int)root->data){
-		root->left=buildTree(root->left,data, root);
-	} else if ((int)data> (int)root->data) {
-		root->right=buildTree(root->right,data, root);
-	} else {
-		root->count +=1;
-	}
-	return root;
-}*/

@@ -156,14 +156,18 @@ void parser ( myScanner scanIt, Treeptr aTree ) {
 //<program>  ->     <vars> <block>
 //Return 0 if no <vars> or <block> found
 int program_parse (myScanner scanIt, Treeptr aTree ) {
-    fprintf(stderr, "build root.\n");
-    aTree= buildTree("<program>", aTree);
+    fprintf(stderr, "parsing ...\n");
+    aTree= buildTree("<program>","", aTree);
+    Treeptr varNode, blockNode;
+    
     int flag = 1;
     if (strstr(t->tokenVal,"Var")!=NULL) {                              // if 'Var' is found
-        if (launch (vars_parse_code, scanIt, aTree)==0) flag--;                //call vars_parse
+        varNode = buildTree( "<vars>", "", aTree);
+        if (launch (vars_parse_code, scanIt, varNode)==0) flag--;                //call vars_parse
     } 
     if (strstr(t->tokenVal,"Begin")!=NULL) {                            // if 'Begin' is found (no <vars> section)
-        if (launch (block_parse_code, scanIt, aTree)==0) flag--;
+        blockNode = buildTree("<block>", "", aTree);
+        if (launch (block_parse_code, scanIt, blockNode)==0) flag--;
     } else
     {
         fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing main program. \n", t->tokenLine);
@@ -178,11 +182,11 @@ int program_parse (myScanner scanIt, Treeptr aTree ) {
 //<block>    ->      Begin <vars> <stats> End
 //return 1 if success, 0 if there's an error
 int block_parse (myScanner scanIt, Treeptr parentNode ) {
-    Treeptr tempNode;
-    tempNode = buildTree("<block>", parentNode);
+    Treeptr varsNode,statsNode;
     int flag = 1;
     if (strstr(t->tokenVal,"Var")!=NULL) {
-        if ( launch(vars_parse_code, scanIt, tempNode)==0 ) flag--;
+        varsNode = buildTree("<Vars>", "", parentNode);
+        if ( launch(vars_parse_code, scanIt, varsNode)==0 ) flag--;
     }
     // if vars is all empty, then we check for <stats>
     //<stats>    ->      <stat>  <mStat>
@@ -190,7 +194,8 @@ int block_parse (myScanner scanIt, Treeptr parentNode ) {
     //and call function accordingly, note that we check qualifying condition for a function
     //before we call the function
 
-    if (stats_parse (scanIt, tempNode)==0) flag--;                            //check for <stats>
+    statsNode = buildTree("<Stats>", "", parentNode);
+    if (stats_parse (scanIt, statsNode)==0) flag--;                            //check for <stats>
     
     if (strstr(t->tokenVal,"End")==NULL)
     {
@@ -205,11 +210,11 @@ int block_parse (myScanner scanIt, Treeptr parentNode ) {
 
 //<vars>     ->      empty | Var Identifier <mvars> 
 int vars_parse (myScanner scanIt, Treeptr parentNode ) {
-    Treeptr tempNode;
-    tempNode = buildTree( "<vars>", parentNode);
+    Treeptr idNode;
     int flag = 1;
     if (t->tokenType == idCode) {
-        if (launch(mvars_parse_code, scanIt, tempNode)==0) flag--;            // check for <mvars>
+        idNode = buildTree( "<ID>", t->tokenVal, parentNode);
+        launch(mvars_parse_code, scanIt, parentNode);            // check for <mvars>
     } else
     {
         fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing the body of variable declairation. \n", t->tokenLine-1);
@@ -222,13 +227,17 @@ int vars_parse (myScanner scanIt, Treeptr parentNode ) {
 
 //<mvars>    ->     empty | : : Identifier <mvars>
 int mvars_parse (myScanner scanIt, Treeptr parentNode ) {
-    Treeptr tempNode;
-    tempNode = buildTree( "<mvars>", parentNode);
+    Treeptr mvarsNode, idNode;
     int flag = 1;
-    if (t->tokenType==otherCode && t->tokenVal[0]==':') {           //reconizing :
-        if (launch (get_next_token, scanIt, tempNode)==0) flag--;   //need to check the passing of tempNode here
+    if (t->tokenType == idCode) {                                   //if an identifier is found
+        mvarsNode = buildTree( "<mvars>", "", parentNode);
+        idNode = buildTree( "<ID>", t->tokenVal, mvarsNode);
+        launch(mvars_parse_code, scanIt, mvarsNode);                // recognizing : : Identifier
+    }else if (t->tokenType==otherCode && t->tokenVal[0]==':') {     //reconizing :
+        if (launch (get_next_token, scanIt, parentNode)==0) flag--; //need to check the passing of tempNode here
         if (t->tokenType==otherCode && t->tokenVal[0]==':') {       //recognizing : : , note there is a space in between
-            if (launch (get_next_token, scanIt, tempNode)==0) flag--;
+            if (launch (get_next_token, scanIt, parentNode)==0) flag--;
+            mvars_parse (scanIt, parentNode);
         }  else
         {
             flag--;
@@ -239,14 +248,6 @@ int mvars_parse (myScanner scanIt, Treeptr parentNode ) {
         flag--;
         if (t->tokenType!=keywordCode) fprintf(stderr, "[ERROR : line %d] Incorrect syntax of multiple variable declaration. \n", t->tokenLine);
     }
-    
-    if (t->tokenType == idCode) {
-        if (launch(mvars_parse_code, scanIt, tempNode)==0) flag--;                           // recognizing : : Identifier
-    } else
-    {
-        flag--;
-        if (t->tokenType!=keywordCode) fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing identifier. \n", t->tokenLine);
-    }
 
     if (flag <= 0) return 0;
     else
@@ -255,11 +256,15 @@ int mvars_parse (myScanner scanIt, Treeptr parentNode ) {
 
 //<stats>    ->      <stat>  <mStat>
 int stats_parse (myScanner scanIt, Treeptr parentNode ) {
-    Treeptr tempNode;
-    tempNode = buildTree( "<stats>", parentNode);
     int flag = 1;
-    if (stat_parse (scanIt, tempNode)==0) flag--;                                             // check for <stat>
-    if (mStat_parse (scanIt, tempNode) ==0) flag--;                                       // check for <mStat>
+    Treeptr statNode, mstatNode;
+    statNode = buildTree("<stat>", "", parentNode);
+    if (stat_parse (scanIt, statNode)<=0) flag--;                                             // check for <stat>
+    //else {
+        mstatNode = buildTree("<mStat>", "", parentNode);
+        mStat_parse (scanIt, mstatNode);                                       // check for <mStat>
+    //}    
+
     //note that launch function is not used in these function calls
     //no current token got consumed yet
     if (flag <= 0) return 0;
@@ -269,66 +274,67 @@ int stats_parse (myScanner scanIt, Treeptr parentNode ) {
 
 //<mStat>    ->      empty | <stat>  <mStat>
 int mStat_parse (myScanner scanIt, Treeptr parentNode ) {
-    Treeptr tempNode;
-    tempNode = buildTree( "<mStat>", parentNode);
     int flag = 1;
-    if (stat_parse(scanIt, tempNode)==1) {
-        fprintf(stderr, "[XXX]\n");
-        if (mStat_parse (scanIt, tempNode)==0) flag--;
+    Treeptr statNode;
+    statNode = buildTree("<stat>","", parentNode);
+    if (stat_parse(scanIt, statNode)==1) {
+        if (mStat_parse (scanIt, parentNode)==0) flag--;
     }
     else
     {
         flag--;
     }
 
-    if (flag <= 0) return 0;
-    else
-        return 1;
+    return flag;
 }
 
 //<stat>     ->      <in> | <out> | <block> | <if> | <loop> | <assign>
 int stat_parse (myScanner scanIt, Treeptr parentNode ) {
     Treeptr tempNode;
-    tempNode = buildTree( "<stat>", parentNode);
     int flag = 0;
     if (strstr(t->tokenVal,"Scan")!=NULL) {
         flag++;
-        if(launch (scan_parse_code, scanIt, tempNode)==0) flag--;
+        tempNode = buildTree( "<In>","", parentNode);
+        if(launch (scan_parse_code, scanIt, tempNode)<=0) flag--;
     }
     else if (strstr(t->tokenVal,"Print")!=NULL) {
         flag++;
-        if(launch (print_parse_code, scanIt, tempNode)==0) flag--;
+        tempNode = buildTree( "<Out>","", parentNode);
+        if(launch (print_parse_code, scanIt, tempNode)<=0) flag--;
     }  
     else if (t->tokenVal[0] =="[") {
         flag++;
-        if(launch (iff_parse_code, scanIt, tempNode)==0) flag--;
+        tempNode = buildTree( "<If>","", parentNode);
+        if(launch (iff_parse_code, scanIt, tempNode)<=0) flag--;
     }
     else if (strstr(t->tokenVal,"Loop")!=NULL) {
         flag++;
-        if(launch (loop_parse_code, scanIt, tempNode)==0) flag--;
+        tempNode = buildTree( "<Loop>","", parentNode);
+        if(launch (loop_parse_code, scanIt, tempNode)<=0) flag--;
     }
     else if (strstr(t->tokenVal,"Begin")!=NULL) {
         flag++;
-        if(launch (block_parse_code, scanIt, tempNode)==0) flag--;
+        tempNode = buildTree( "<block>","", parentNode);
+        if(launch (block_parse_code, scanIt, tempNode)<=0) flag--;
     }
     else if (t->tokenType==idCode ) {
         flag++;
-        if(launch (assign_parse_code, scanIt, tempNode)==0) flag--;
+        Treeptr assignNode;
+        assignNode = buildTree( "<assign>","", parentNode);
+        tempNode = buildTree( "<ID>", t->tokenVal, assignNode);
+        if(launch (assign_parse_code, scanIt, assignNode)<=0) flag--;
     }
     // if found no <stats>, issue syntax error because <stats> can't be empty per given grammar
-    else if (flag == 0)
+    else if (flag < 0)
     {
         fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing the body of <stat> block. \n", t->tokenLine-1);
     }
-    if (flag <= 0) return 0;
-    else
-        return 1;
+    return flag;
     
 }
 //<in>       ->      Scan : Identifier .
 int scan_parse (myScanner scanIt, Treeptr parentNode ) {
     Treeptr tempNode;
-    tempNode = buildTree( "<in>", parentNode);
     int flag = 1;
     
     if (strstr(t->tokenVal,":")!=NULL) {
@@ -341,6 +347,7 @@ int scan_parse (myScanner scanIt, Treeptr parentNode ) {
     }
 
     if (t->tokenType==idCode ) {
+        tempNode = buildTree( "<ID>", t->tokenVal, parentNode);
         if(launch (get_next_token, scanIt, tempNode)==0) flag--;
     }
     else
@@ -365,7 +372,6 @@ int scan_parse (myScanner scanIt, Treeptr parentNode ) {
 //<out>      ->      Print [ <expr>  ] .
 int print_parse (myScanner scanIt, Treeptr parentNode ) {
     Treeptr tempNode;
-    tempNode = buildTree( "<out>", parentNode);
     int flag = 1;
     if (strstr(t->tokenVal,"[")!=NULL) {
         if(launch (get_next_token, scanIt, tempNode)==0) flag--;
@@ -377,6 +383,7 @@ int print_parse (myScanner scanIt, Treeptr parentNode ) {
     }
     
     if (strstr(t->tokenVal,"-")!=NULL || strstr(t->tokenVal,"[")!=NULL || t->tokenType==idCode || t->tokenType==intCode) {
+        tempNode = buildTree( "<Expr>", "",parentNode);
         if(expr_parse(scanIt, tempNode)==0) flag--;
     }
     else
@@ -409,12 +416,14 @@ int print_parse (myScanner scanIt, Treeptr parentNode ) {
 
 //<if>       ->      [ <expr> <RO> <expr> ]  Iff <block> 
 int iff_parse (myScanner scanIt, Treeptr parentNode ) {
-    Treeptr tempNode;
-    tempNode = buildTree( "<if>", parentNode);
+    Treeptr roNode,blockNode, tempNode;
+    roNode = buildTree( "<RO>","", parentNode);
+    blockNode = buildTree( "<block>","", parentNode);
     int flag = 1;
     
                                                             //check for <expr>
     if (t->tokenVal[0]=="-" || t->tokenVal[0] =="[" || t->tokenType==idCode || t->tokenType==intCode) {
+        tempNode = buildTree( "<expr>","", roNode);
         if(expr_parse(scanIt, tempNode)==0) flag--;
     }
     else
@@ -424,6 +433,7 @@ int iff_parse (myScanner scanIt, Treeptr parentNode ) {
     }
                                                             //check for <RO>    
     if (t->tokenType==relCode ) {
+        // need to record RO data here (greater, equal or something)
         if(launch (get_next_token, scanIt, tempNode)==0) flag--;
     }
     else
@@ -433,6 +443,7 @@ int iff_parse (myScanner scanIt, Treeptr parentNode ) {
     }   
                                                             //check for another <expr>
     if (strstr(t->tokenVal,"-")!=NULL || strstr(t->tokenVal,"[")!=NULL || t->tokenType==idCode || t->tokenType==intCode) {
+        tempNode = buildTree( "<expr>","", roNode);
         if(expr_parse(scanIt, tempNode)==0) flag--;
     }
     else
@@ -459,7 +470,7 @@ int iff_parse (myScanner scanIt, Treeptr parentNode ) {
         flag --;
     }
     if (strstr(t->tokenVal,"Begin")!=NULL) {                            // if 'Begin' is found (no <vars> section)
-        if (launch (block_parse_code, scanIt, tempNode)==0) flag--;
+        if (launch (block_parse_code, scanIt, blockNode)==0) flag--;
     } else
     {
         fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing <block>. \n", t->tokenLine);
@@ -471,12 +482,14 @@ int iff_parse (myScanner scanIt, Treeptr parentNode ) {
 }            
 //<loop>     ->      Loop [ <expr> <RO> <expr> ] <block>
 int loop_parse (myScanner scanIt, Treeptr parentNode ) {
-    Treeptr tempNode;
-    tempNode = buildTree( "<loop>", parentNode);
+    Treeptr roNode,blockNode, tempNode;
+    roNode = buildTree( "<RO>","", parentNode);
+    blockNode = buildTree( "<block>","", parentNode);
     int flag = 1;
     
                                                             //check for <expr>
     if (strstr(t->tokenVal,"-")!=NULL || strstr(t->tokenVal,"[")!=NULL || t->tokenType==idCode || t->tokenType==intCode) {
+        tempNode = buildTree( "<expr>","", roNode);
         if(expr_parse(scanIt, tempNode)==0) flag--;
     }
     else
@@ -486,6 +499,7 @@ int loop_parse (myScanner scanIt, Treeptr parentNode ) {
     }
                                                             //check for <RO>    
     if (t->tokenType==relCode ) {
+        //put relational codes here
         if(launch (get_next_token, scanIt, tempNode)==0) flag--;
     }
     else
@@ -495,6 +509,7 @@ int loop_parse (myScanner scanIt, Treeptr parentNode ) {
     }   
                                                             //check for another <expr>
     if (strstr(t->tokenVal,"-")!=NULL || strstr(t->tokenVal,"[")!=NULL || t->tokenType==idCode || t->tokenType==intCode) {
+        tempNode = buildTree( "<expr>","", roNode);
         if(expr_parse(scanIt, tempNode)==0) flag--;
     }
     else
@@ -512,7 +527,7 @@ int loop_parse (myScanner scanIt, Treeptr parentNode ) {
         flag --;
     }
     if (strstr(t->tokenVal,"Begin")!=NULL) {                  // if 'Begin' is found (no <vars> section)
-        if (launch (block_parse_code, scanIt, tempNode)==0) flag--;
+        if (launch (block_parse_code, scanIt, blockNode)==0) flag--;
     } else
     {
         fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing <block>. \n", t->tokenLine);
@@ -526,7 +541,6 @@ int loop_parse (myScanner scanIt, Treeptr parentNode ) {
 //<assign>   ->      Identifier == <expr> .                   // == is one token here
 int assign_parse (myScanner scanIt, Treeptr parentNode ) {
     Treeptr tempNode;
-    tempNode = buildTree( "<assign>", parentNode);
     int flag = 1;
     if (strstr(t->tokenVal,"==")!=NULL) {
         if(launch (get_next_token, scanIt, tempNode)==0) flag--;
@@ -538,6 +552,7 @@ int assign_parse (myScanner scanIt, Treeptr parentNode ) {
     }
     
     if (strstr(t->tokenVal,"-")!=NULL || strstr(t->tokenVal,"[")!=NULL || t->tokenType==idCode || t->tokenType==intCode) {
+        tempNode = buildTree( "<expr>","", parentNode);
         if(expr_parse(scanIt, tempNode)==0) flag--;
     }
     else
@@ -556,23 +571,23 @@ int assign_parse (myScanner scanIt, Treeptr parentNode ) {
     }
     if (flag <= 0) return 0;
     else
-        return 1;
+        return 1;  
 }
 
 //<expr>     ->      <M> + <expr> | <M>
 //expr is a wrapper
 int expr_parse(myScanner scanIt, Treeptr parentNode ) {
     Treeptr tempNode;
-    tempNode = buildTree( "<expr>", parentNode);
     int flag = 1;
     
-    if(M_parse(scanIt, NULL)==1){
+    if(M_parse(scanIt, parentNode)==1){
         if(launch (get_next_token, scanIt, tempNode)==0) flag--;
     }
     else flag--;
     
     if (strstr(t->tokenVal,"+")!=NULL) {
         if(launch (get_next_token, scanIt, tempNode)==0) flag--;
+        tempNode = buildTree( "<expr>","", parentNode);
         if(expr_parse(scanIt, tempNode)==0) flag--;
     }
     
@@ -584,15 +599,15 @@ int expr_parse(myScanner scanIt, Treeptr parentNode ) {
 //<M>        ->     <T> - <M> | <T>
 int M_parse(myScanner scanIt, Treeptr parentNode ) {
     Treeptr tempNode;
-    tempNode = buildTree( "<M>", parentNode);
     int flag = 1;
 
-    if(T_parse(scanIt, NULL)==1){
+    if(T_parse(scanIt, parentNode)==1){
         if(launch (get_next_token, scanIt, tempNode)==0) flag--;
     }
     else flag--;
     
     if (strstr(t->tokenVal,"-")!=NULL) {
+        tempNode = buildTree( "<M>","", parentNode);
         if(launch (get_next_token, scanIt, tempNode)==0) flag--;
         if(M_parse(scanIt, tempNode)==0) flag--;
     }
@@ -604,7 +619,7 @@ int M_parse(myScanner scanIt, Treeptr parentNode ) {
 //<T>        ->      <F> * <T> | <F> / <T> | <F>
 int T_parse(myScanner scanIt, Treeptr parentNode ) {
     Treeptr tempNode;
-    tempNode = buildTree( "<T>", parentNode);
+    tempNode = buildTree( "<T>","", parentNode);
     int flag = 1;
 
     if(F_parse(scanIt, tempNode)==1){
@@ -624,7 +639,7 @@ int T_parse(myScanner scanIt, Treeptr parentNode ) {
 //<F>        ->      - <F> | <R>
 int F_parse(myScanner scanIt, Treeptr parentNode ) {
     Treeptr tempNode;
-    tempNode = buildTree( "<F>", parentNode);
+    tempNode = buildTree( "<F>","", parentNode);
     int flag = 1;
 
     if (strstr(t->tokenVal,"-")!=NULL) {
@@ -641,9 +656,14 @@ int F_parse(myScanner scanIt, Treeptr parentNode ) {
 //<R>        ->      [ <expr> ] | Identifier | Number   
 int R_parse(myScanner scanIt, Treeptr parentNode ) {
     Treeptr tempNode;
-    tempNode = buildTree( "<R>", parentNode);
+    tempNode = buildTree( "<R>","", parentNode);
     int flag = 1;
-    if (t->tokenType==idCode || t->tokenType==intCode) {
+    if (t->tokenType==idCode) {
+        tempNode = buildTree( "<ID>", t->tokenVal, tempNode);
+        if(launch (get_next_token, scanIt, tempNode)==0) flag--;
+    }
+    if (t->tokenType==intCode) {
+        tempNode = buildTree( "<INT>", t->tokenVal, tempNode);
         if(launch (get_next_token, scanIt, tempNode)==0) flag--;
     }
     else {
@@ -657,6 +677,7 @@ int R_parse(myScanner scanIt, Treeptr parentNode ) {
         }
         
         if (strstr(t->tokenVal,"-")!=NULL || strstr(t->tokenVal,"[")!=NULL || t->tokenType==idCode || t->tokenType==intCode) {
+            tempNode = buildTree( "<expr>","", tempNode);
             if(expr_parse(scanIt, tempNode)==0) flag--;
         }
         else
