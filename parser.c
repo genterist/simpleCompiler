@@ -500,6 +500,7 @@ int loop_parse (myScanner scanIt, Treeptr parentNode ) {
                                                             //check for <RO>    
     if (t->tokenType==relCode ) {
         //put relational codes here
+        strcpy(roNode->value,t->tokenVal);
         if(launch (get_next_token, scanIt, tempNode)==0) flag--;
     }
     else
@@ -543,6 +544,7 @@ int assign_parse (myScanner scanIt, Treeptr parentNode ) {
     Treeptr tempNode;
     int flag = 1;
     if (strstr(t->tokenVal,"==")!=NULL) {
+        strcpy(parentNode->value,t->tokenVal);
         if(launch (get_next_token, scanIt, tempNode)==0) flag--;
     }
     else
@@ -577,15 +579,16 @@ int assign_parse (myScanner scanIt, Treeptr parentNode ) {
 //<expr>     ->      <M> + <expr> | <M>
 //expr is a wrapper
 int expr_parse(myScanner scanIt, Treeptr parentNode ) {
-    Treeptr tempNode;
+    Treeptr tempNode, mNode;
     int flag = 1;
-    
-    if(M_parse(scanIt, parentNode)==1){
-        if(launch (get_next_token, scanIt, tempNode)==0) flag--;
+    mNode = buildTree( "<M>","", parentNode);
+    if(M_parse(scanIt, mNode)==1){
+        if(launch (get_next_token, scanIt, parentNode)==0) flag--;
     }
     else flag--;
     
     if (strstr(t->tokenVal,"+")!=NULL) {
+        strcpy(parentNode->value,t->tokenVal);
         if(launch (get_next_token, scanIt, tempNode)==0) flag--;
         tempNode = buildTree( "<expr>","", parentNode);
         if(expr_parse(scanIt, tempNode)==0) flag--;
@@ -598,17 +601,19 @@ int expr_parse(myScanner scanIt, Treeptr parentNode ) {
 
 //<M>        ->     <T> - <M> | <T>
 int M_parse(myScanner scanIt, Treeptr parentNode ) {
-    Treeptr tempNode;
+    //note that there are two M nodes in this block of codes
+    Treeptr tempNode,mNode;
     int flag = 1;
-
-    if(T_parse(scanIt, parentNode)==1){
-        if(launch (get_next_token, scanIt, tempNode)==0) flag--;
+    tempNode = buildTree( "<T>","", parentNode);
+    if(T_parse(scanIt, mNode)==1){
+        if(launch (get_next_token, scanIt, parentNode)==0) flag--;
     }
     else flag--;
     
     if (strstr(t->tokenVal,"-")!=NULL) {
+        strcpy(parentNode->value,t->tokenVal);
         tempNode = buildTree( "<M>","", parentNode);
-        if(launch (get_next_token, scanIt, tempNode)==0) flag--;
+        if(launch (get_next_token, scanIt, parentNode)==0) flag--;
         if(M_parse(scanIt, tempNode)==0) flag--;
     }
     
@@ -618,18 +623,20 @@ int M_parse(myScanner scanIt, Treeptr parentNode ) {
 }
 //<T>        ->      <F> * <T> | <F> / <T> | <F>
 int T_parse(myScanner scanIt, Treeptr parentNode ) {
-    Treeptr tempNode;
-    tempNode = buildTree( "<T>","", parentNode);
+    Treeptr tempNode,fNode;
+    fNode = buildTree( "<F>","", parentNode);
     int flag = 1;
 
-    if(F_parse(scanIt, tempNode)==1){
-        if(launch (get_next_token, scanIt, tempNode)==0) flag--;
+    if(F_parse(scanIt, parentNode)==1){
+        if(launch (get_next_token, scanIt, parentNode)==0) flag--;
     }
     else flag--;
     
     if (strstr(t->tokenVal,"*")!=NULL || strstr(t->tokenVal,"/")!=NULL) {
+        strcpy(parentNode->value,t->tokenVal);
         if(launch (get_next_token, scanIt, tempNode)==0) flag--;
-        if(F_parse(scanIt, tempNode)==0) flag--;
+        tempNode = buildTree( "<T>","", parentNode);
+        if(T_parse(scanIt, tempNode)==0) flag--;
     }
     
     if (flag <= 0) return 0;
@@ -639,13 +646,15 @@ int T_parse(myScanner scanIt, Treeptr parentNode ) {
 //<F>        ->      - <F> | <R>
 int F_parse(myScanner scanIt, Treeptr parentNode ) {
     Treeptr tempNode;
-    tempNode = buildTree( "<F>","", parentNode);
     int flag = 1;
 
     if (strstr(t->tokenVal,"-")!=NULL) {
+        strcpy(parentNode->value,t->tokenVal);
         if(launch (get_next_token, scanIt, tempNode)==0) flag--;
+        tempNode = buildTree( "<F>","", parentNode);        
         if(F_parse(scanIt, tempNode)==0) flag--;
     } else {
+        tempNode = buildTree( "<R>","", parentNode);
         if(R_parse(scanIt, tempNode)==0) flag--;
     }
     
@@ -656,19 +665,18 @@ int F_parse(myScanner scanIt, Treeptr parentNode ) {
 //<R>        ->      [ <expr> ] | Identifier | Number   
 int R_parse(myScanner scanIt, Treeptr parentNode ) {
     Treeptr tempNode;
-    tempNode = buildTree( "<R>","", parentNode);
     int flag = 1;
     if (t->tokenType==idCode) {
-        tempNode = buildTree( "<ID>", t->tokenVal, tempNode);
+        tempNode = buildTree( "<ID>", t->tokenVal, parentNode);
         if(launch (get_next_token, scanIt, tempNode)==0) flag--;
     }
     if (t->tokenType==intCode) {
-        tempNode = buildTree( "<INT>", t->tokenVal, tempNode);
+        tempNode = buildTree( "<INT>", t->tokenVal, parentNode);
         if(launch (get_next_token, scanIt, tempNode)==0) flag--;
     }
     else {
         if (strstr(t->tokenVal,"[")!=NULL) {
-            if(launch (get_next_token, scanIt, tempNode)==0) flag--;
+            if(launch (get_next_token, scanIt, parentNode)==0) flag--;
         }
         else
         {
@@ -677,7 +685,7 @@ int R_parse(myScanner scanIt, Treeptr parentNode ) {
         }
         
         if (strstr(t->tokenVal,"-")!=NULL || strstr(t->tokenVal,"[")!=NULL || t->tokenType==idCode || t->tokenType==intCode) {
-            tempNode = buildTree( "<expr>","", tempNode);
+            tempNode = buildTree( "<expr>","", parentNode);
             if(expr_parse(scanIt, tempNode)==0) flag--;
         }
         else
