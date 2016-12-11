@@ -27,7 +27,6 @@
 #include "./parser.h"
 #include "./buildTree.h"
 #include "./traversals.h"
-#include "./scopeCheck.h"
 
 //************************
 //THE CFG USED

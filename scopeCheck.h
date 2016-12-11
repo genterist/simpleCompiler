@@ -16,7 +16,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int scopes[100];
-int scopeMembers[100];
+extern int scopes[100];
+extern int scopeMembers[100];
+
+int scope_add (int scope, int val);
+void scope_print ();
 
 #endif /* SCOPECHECK_H_ */

@@ -29,6 +29,7 @@
 #include "./parser.h"
 #include "./buildTree.h"
 #include "./traversals.h"
+#include "./scopeCheck.h"
 
 
 int main(int argc, char *argv[])
@@ -46,10 +47,14 @@ int main(int argc, char *argv[])
 	    { scanIt = scanByName(argv[1]);}   // if file name specified, read from file
 	  else
 	    { scanIt = scanByStream(stdin);}   // if file name not specified, read from input stream
-	
+	    
     parser(scanIt, theTree);
     TravPreOrder(theTree, 0, "parse_Result");
     clearScanner (scanIt);
+
+    scope_print();
+   
+   
 
 	return EXIT_SUCCESS;
 }
