@@ -26,6 +26,9 @@ Treeptr insertNewNode(char data[25], char value [25], Treeptr parent_node){
 	newNode->left=newNode->right=NULL;
 	if (parent_node == NULL) newNode->parent = NULL;
 	else newNode->parent = parent_node;
+	if (parent_node==NULL) newNode->scope = 0;
+	else if (strstr(newNode->value,"<block>")!=NULL) newNode->scope = parent_node->scope + 1;
+	else newNode->scope = parent_node->scope;
 	return newNode;
 }
 

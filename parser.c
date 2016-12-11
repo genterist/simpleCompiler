@@ -89,6 +89,12 @@ int T_parse(myScanner scanIt,  Treeptr parentNode );
 int F_parse(myScanner scanIt,  Treeptr parentNode );
 int R_parse(myScanner scanIt,  Treeptr parentNode );
 
+int string2int (char aString[25]){
+    int temp = 0;
+    int ctr = 0;
+    for (ctr=0; ctr<strlen(aString); ctr++) {temp = temp + (int) aString[ctr];}
+    return temp;
+}
 
 // AUX function
 int launch (int code, myScanner scanIt, Treeptr parentNode ) {
@@ -167,6 +173,7 @@ int program_parse (myScanner scanIt, Treeptr aTree ) {
     } 
     if (strstr(t->tokenVal,"Begin")!=NULL) {                            // if 'Begin' is found (no <vars> section)
         blockNode = buildTree("<block>", "", aTree);
+        blockNode->scope = aTree->scope + 1;
         if (launch (block_parse_code, scanIt, blockNode)==0) flag--;
     } else
     {
@@ -214,6 +221,11 @@ int vars_parse (myScanner scanIt, Treeptr parentNode ) {
     int flag = 1;
     if (t->tokenType == idCode) {
         idNode = buildTree( "<ID>", t->tokenVal, parentNode);
+        //convert text variable to string 
+        char tempString[25];
+        strcpy(tempString,idNode->value );
+        //store it to scope arrays
+        scope_add(idNode->scope, string2int(tempString));
         launch(mvars_parse_code, scanIt, parentNode);            // check for <mvars>
     } else
     {
@@ -225,6 +237,7 @@ int vars_parse (myScanner scanIt, Treeptr parentNode ) {
         return 1;
 }
 
+
 //<mvars>    ->     empty | : : Identifier <mvars>
 int mvars_parse (myScanner scanIt, Treeptr parentNode ) {
     Treeptr mvarsNode, idNode;
@@ -232,6 +245,11 @@ int mvars_parse (myScanner scanIt, Treeptr parentNode ) {
     if (t->tokenType == idCode) {                                   //if an identifier is found
         mvarsNode = buildTree( "<mvars>", "", parentNode);
         idNode = buildTree( "<ID>", t->tokenVal, mvarsNode);
+        //convert text variable to string 
+        char tempString[25];
+        strcpy(tempString,idNode->value );
+        //store it to scope arrays
+        scope_add(idNode->scope, string2int(tempString));
         launch(mvars_parse_code, scanIt, mvarsNode);                // recognizing : : Identifier
     }else if (t->tokenType==otherCode && t->tokenVal[0]==':') {     //reconizing :
         if (launch (get_next_token, scanIt, parentNode)==0) flag--; //need to check the passing of tempNode here
@@ -315,6 +333,7 @@ int stat_parse (myScanner scanIt, Treeptr parentNode ) {
     else if (strstr(t->tokenVal,"Begin")!=NULL) {
         flag++;
         tempNode = buildTree( "<block>","", parentNode);
+        tempNode->scope = parentNode->scope + 1;
         if(launch (block_parse_code, scanIt, tempNode)<=0) flag--;
     }
     else if (t->tokenType==idCode ) {
@@ -422,6 +441,7 @@ int iff_parse (myScanner scanIt, Treeptr parentNode ) {
     Treeptr roNode,blockNode, tempNode;
     roNode = buildTree( "<RO>","", parentNode);
     blockNode = buildTree( "<block>","", parentNode);
+    blockNode->scope = parentNode->scope + 1;
     int flag = 1;
     
                                                             //check for <expr>
@@ -489,6 +509,7 @@ int loop_parse (myScanner scanIt, Treeptr parentNode ) {
     Treeptr roNode,blockNode, tempNode;
     roNode = buildTree( "<RO>","", parentNode);
     blockNode = buildTree( "<block>","", parentNode);
+    blockNode->scope = parentNode->scope + 1;
     int flag = 1;
     
                                                             //check for <expr>

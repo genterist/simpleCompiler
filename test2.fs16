@@ -1,7 +1,10 @@
+Var x : : y 
 Begin
-      Print [ 1 ] .
-    Begin
-       Print [ 1 ] .
-    End
-    Var T
+  Var z 
+  Print [ 1 ] .
+  Begin
+    Var z : : w 
+    Print [ y + x + z + w ] .
+  End
+  Print [ y + x + z ] . 
 End
