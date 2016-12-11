@@ -27,6 +27,7 @@
 #include "./parser.h"
 #include "./buildTree.h"
 #include "./traversals.h"
+#include "./scopeCheck.h"
 
 //************************
 //THE CFG USED
@@ -302,7 +303,7 @@ int stat_parse (myScanner scanIt, Treeptr parentNode ) {
         tempNode = buildTree( "<Out>","", parentNode);
         if(launch (print_parse_code, scanIt, tempNode)<=0) flag--;
     }  
-    else if (t->tokenVal[0] =="[") {
+    else if (strstr(t->tokenVal,"[")!=NULL) {
         flag++;
         tempNode = buildTree( "<If>","", parentNode);
         if(launch (iff_parse_code, scanIt, tempNode)<=0) flag--;
@@ -323,6 +324,9 @@ int stat_parse (myScanner scanIt, Treeptr parentNode ) {
         assignNode = buildTree( "<assign>","", parentNode);
         tempNode = buildTree( "<ID>", t->tokenVal, assignNode);
         if(launch (assign_parse_code, scanIt, assignNode)<=0) flag--;
+    }
+    else if (strstr(t->tokenVal,"End")!=NULL) {
+        if(launch (get_next_token, scanIt, tempNode)==0) flag--;
     }
     // if found no <stats>, issue syntax error because <stats> can't be empty per given grammar
     else if (flag < 0)
@@ -434,6 +438,7 @@ int iff_parse (myScanner scanIt, Treeptr parentNode ) {
                                                             //check for <RO>    
     if (t->tokenType==relCode ) {
         // need to record RO data here (greater, equal or something)
+        strcpy(roNode->value,t->tokenVal);
         if(launch (get_next_token, scanIt, tempNode)==0) flag--;
     }
     else
@@ -605,7 +610,7 @@ int M_parse(myScanner scanIt, Treeptr parentNode ) {
     Treeptr tempNode,mNode;
     int flag = 1;
     tempNode = buildTree( "<T>","", parentNode);
-    if(T_parse(scanIt, mNode)==1){
+    if(T_parse(scanIt, tempNode)==1){
         if(launch (get_next_token, scanIt, parentNode)==0) flag--;
     }
     else flag--;
@@ -627,7 +632,7 @@ int T_parse(myScanner scanIt, Treeptr parentNode ) {
     fNode = buildTree( "<F>","", parentNode);
     int flag = 1;
 
-    if(F_parse(scanIt, parentNode)==1){
+    if(F_parse(scanIt, fNode)==1){
         if(launch (get_next_token, scanIt, parentNode)==0) flag--;
     }
     else flag--;

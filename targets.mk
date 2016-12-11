@@ -1,5 +1,6 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
+/scopeCheck.c \
 /traversals.c \
 /buildTree.c \
 /token.c \
@@ -8,6 +9,7 @@ C_SRCS += \
 /main.c 
 
 OBJS += \
+./scopeCheck.o \
 ./traversals.o \
 ./buildTree.o \
 ./token.o \
@@ -16,6 +18,7 @@ OBJS += \
 ./main.o 
 
 C_DEPS += \
+./scopeCheck.d \
 ./traversals.d \
 ./buildTree.d \
 ./token.d \

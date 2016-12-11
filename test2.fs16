@@ -1,8 +1,7 @@
-Var a : : b 
-
 Begin
-    Var c
-    Scan : a . 
-    Scan : b .
-
+      Print [ 1 ] .
+    Begin
+       Print [ 1 ] .
+    End
+    Var T
 End
