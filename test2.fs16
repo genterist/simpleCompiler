@@ -1,10 +1,4 @@
-Var x : : y 
-Begin
-  Var z 
-  Print [ 1 ] .
-  Begin
-    Var z : : w 
-    Print [ y + x + z + w ] .
-  End
-  Print [ y + x + z ] . 
-End
+Var x
+Begin 
+  x == 1 .
+End 

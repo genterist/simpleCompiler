@@ -101,6 +101,11 @@ int launch (int code, myScanner scanIt, Treeptr parentNode ) {
     int temp = 0;
     //consume the matched token that calls the corresponding function
     //get the next token
+    //clearToken(t);
+    if (t != NULL) {
+        if (strcmp(t->tokenVal, "") != 0) memset(t->tokenVal,0,sizeof(t->tokenVal));           //preventing mem issues
+    }
+
     if (hasTokenError (t = getToken(scanIt)) == 0 || strstr(t->tokenVal,"EOF")!=NULL) { // if there is no error
         //call the function, feel free to enable, disable or inject troubleshooting routines to these switches
        switch (code) {
@@ -115,14 +120,14 @@ int launch (int code, myScanner scanIt, Treeptr parentNode ) {
                 temp = vars_parse (scanIt, parentNode);
                 break;
             case 203:
-                printf("-statS- %s\n", t->tokenVal);
+                //printf("-statS- %s\n", t->tokenVal);
                 temp = stats_parse (scanIt, parentNode);
                 break;
             case 204:
                 temp = mvars_parse (scanIt, parentNode);
                 break;
             case 205:
-                printf("-scan- %s\n", t->tokenVal);
+                //printf("-scan- %s\n", t->tokenVal);
                 temp = scan_parse (scanIt, parentNode);
                 break;
             case 206: 
@@ -130,15 +135,15 @@ int launch (int code, myScanner scanIt, Treeptr parentNode ) {
                 temp = print_parse (scanIt, parentNode);
                 break;
             case 207:
-                printf("-iff- %s\n", t->tokenVal);
+                //printf("-iff- %s\n", t->tokenVal);
                 temp = iff_parse (scanIt, parentNode);
                 break;
             case 208:
-                printf("-loop- %s\n", t->tokenVal);
+                //printf("-loop- %s\n", t->tokenVal);
                 temp = loop_parse (scanIt, parentNode);
                 break;
             case 209:
-                printf("-assign- %s\n", t->tokenVal);
+                //printf("-assign- %s\n", t->tokenVal);
                 temp = assign_parse (scanIt, parentNode);
                 break;
             default :
@@ -404,7 +409,7 @@ int scan_parse (myScanner scanIt, Treeptr parentNode ) {
     int flag = 1;
     
     if (strstr(t->tokenVal,":")!=NULL) {
-        if(launch (get_next_token, scanIt, tempNode)<=0) flag--;
+        if(launch (get_next_token, scanIt, parentNode)<=0) flag--;
     }
     else
     {
@@ -750,8 +755,8 @@ int R_parse(myScanner scanIt, Treeptr parentNode ) {
         int tempScope = tempNode->scope;
         int foundVar = 0;
         strcpy(tempString,tempNode->value );
-        int tempVar = string2int(tempString);
-        printf("temp var : %d / %s", tempVar, tempString);
+        //int tempVar = string2int(tempString);
+        //printf("temp var : %d / %s", tempVar, tempString);
         while (tempScope>=0){
             foundVar = foundVar + scope_findDup (tempScope,string2int(tempString));
             tempScope--;
