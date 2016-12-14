@@ -8,7 +8,7 @@ endif
 endif
 
 CC = gcc
-OUT_PROG = testFrontEnd
+OUT_PROG = comp
 TEST_PROG = testScanner
 DATA_FILE = parseResult
 

@@ -1,10 +1,13 @@
-Var x : : y 
+Var x : : y : : z123
 Begin
-  Var z 
-  Print [ 1 ] .
-  Begin
-    Var z : : w 
-    Print [ y + x + z + w ] .
-  End
-  Print [ y + x + z ] . 
-End
+  Var x 
+  Print [ 1 ] . 
+  Begin 
+    Var x : : y
+  End  
+  x == y
+  Begin 
+    Var c : : k
+    Print [ 1 ] .
+  End 
+End 

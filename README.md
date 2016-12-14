@@ -1,6 +1,8 @@
 # FULL SCANNER IMPLEMENTATION
 Author: Tam N Nguyen
 
+## Note
+Space is recommended after important keywords
 
 ## Execution
 make : compile main program

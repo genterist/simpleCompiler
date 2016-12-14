@@ -21,5 +21,6 @@ extern int scopeMembers[100];
 
 int scope_add (int scope, int val);
 void scope_print ();
+int scope_findDup (int scope, int val);
 
 #endif /* SCOPECHECK_H_ */

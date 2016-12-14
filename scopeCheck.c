@@ -49,18 +49,13 @@ int scope_add (int scope, int val) {
     int temp=length;
     int posTail = scope_get_end_index(scope);
     int posStart = scope_get_begin_index(scope);
-    //printf("posTail: %d \n", posTail);
     while (temp>posStart) {
         // move all the back members one position away, to the right
         scopeMembers[temp] = scopeMembers[temp-1];
         temp--;
     }
     scopes[scope]++;
-    //printf("Scope %d members: %d \n", scope, scopes[scope]);
-    //printf("posStart: %d \n", posStart);
     scopeMembers[posStart]=val;
-    //posTail = scope_get_end_index(scope);
-    //printf("new posTail: %d \n", posTail);
     
     return 1;
 }
@@ -73,9 +68,7 @@ void scope_print () {
     {
         if (scopes[ctr]>0){
             begin = scope_get_begin_index(ctr);
-            //printf("posStart: %d \n", begin);
             end = scope_get_end_index(ctr);
-            //printf("posTail: %d \n", end);
             printf(" | ");
             for (begin; begin<end; begin++){
                 printf("%d ", scopeMembers[begin]);
@@ -87,3 +80,14 @@ void scope_print () {
     return;
 }
 
+int scope_findDup (int scope, int val) {
+    int temp=0;
+    int posTail = scope_get_end_index(scope);
+    int posStart = scope_get_begin_index(scope);
+    
+    for (posStart; posStart<=posTail; posStart++){
+        if (scopeMembers[posStart]==val) temp++;
+    }
+    
+    return temp;
+}

@@ -108,30 +108,37 @@ int launch (int code, myScanner scanIt, Treeptr parentNode ) {
                 temp = program_parse (scanIt, parentNode);
                 break;
             case 201:
+                //printf("-block- %s\n", t->tokenVal);
                 temp = block_parse (scanIt, parentNode);
                 break;
             case 202:
                 temp = vars_parse (scanIt, parentNode);
                 break;
             case 203:
+                printf("-statS- %s\n", t->tokenVal);
                 temp = stats_parse (scanIt, parentNode);
                 break;
             case 204:
                 temp = mvars_parse (scanIt, parentNode);
                 break;
             case 205:
+                printf("-scan- %s\n", t->tokenVal);
                 temp = scan_parse (scanIt, parentNode);
                 break;
             case 206: 
+                //printf("-print- %s\n", t->tokenVal);
                 temp = print_parse (scanIt, parentNode);
                 break;
             case 207:
+                printf("-iff- %s\n", t->tokenVal);
                 temp = iff_parse (scanIt, parentNode);
                 break;
             case 208:
+                printf("-loop- %s\n", t->tokenVal);
                 temp = loop_parse (scanIt, parentNode);
                 break;
             case 209:
+                printf("-assign- %s\n", t->tokenVal);
                 temp = assign_parse (scanIt, parentNode);
                 break;
             default :
@@ -162,14 +169,14 @@ void parser ( myScanner scanIt, Treeptr aTree ) {
 //<program>  ->     <vars> <block>
 //Return 0 if no <vars> or <block> found
 int program_parse (myScanner scanIt, Treeptr aTree ) {
-    fprintf(stderr, "parsing ...\n");
+    //fprintf(stderr, "parsing ...\n");
     aTree= buildTree("<program>","", aTree);
     Treeptr varNode, blockNode;
     
     int flag = 1;
     if (strstr(t->tokenVal,"Var")!=NULL) {                              // if 'Var' is found
         varNode = buildTree( "<vars>", "", aTree);
-        if (launch (vars_parse_code, scanIt, varNode)==0) flag--;                //call vars_parse
+        if (launch (vars_parse_code, scanIt, varNode)==0) flag--;       //call vars_parse
     } 
     if (strstr(t->tokenVal,"Begin")!=NULL) {                            // if 'Begin' is found (no <vars> section)
         blockNode = buildTree("<block>", "", aTree);
@@ -187,12 +194,13 @@ int program_parse (myScanner scanIt, Treeptr aTree ) {
 
 
 //<block>    ->      Begin <vars> <stats> End
-//return 1 if success, 0 if there's an error
+//return 1 if success, <=0 if there's an error
 int block_parse (myScanner scanIt, Treeptr parentNode ) {
     Treeptr varsNode,statsNode;
     int flag = 1;
+    //launch <vars> section
     if (strstr(t->tokenVal,"Var")!=NULL) {
-        varsNode = buildTree("<Vars>", "", parentNode);
+        varsNode = buildTree("<vars>", "", parentNode);
         if ( launch(vars_parse_code, scanIt, varsNode)==0 ) flag--;
     }
     // if vars is all empty, then we check for <stats>
@@ -200,19 +208,23 @@ int block_parse (myScanner scanIt, Treeptr parentNode ) {
     // since <stat> is mandatory, in this step, we check members of <stat> 
     //and call function accordingly, note that we check qualifying condition for a function
     //before we call the function
+    if (strstr(t->tokenVal,"End")==NULL) {
+        statsNode = buildTree("<Stats>", "", parentNode);
+        if (stats_parse (scanIt, statsNode)<=0) flag--;                            //check for <stats>
+    }
 
-    statsNode = buildTree("<Stats>", "", parentNode);
-    if (stats_parse (scanIt, statsNode)==0) flag--;                            //check for <stats>
     
     if (strstr(t->tokenVal,"End")==NULL)
     {
-        fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Program has to be ended with an 'End'\n", t->tokenLine-1);
+        fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Program has to be ended with an 'End' <block> \n", t->tokenLine-1);
         flag --;
+    } else {
+        if (parentNode->scope>1) {
+            if(launch (get_next_token, scanIt, parentNode)==0) flag--;
+            //printf(" block %s\n", t->tokenVal);
+        }
     }
-    
-    if (flag <= 0) return 0;
-    else
-        return 1;
+    return flag;
 }
 
 //<vars>     ->      empty | Var Identifier <mvars> 
@@ -221,11 +233,15 @@ int vars_parse (myScanner scanIt, Treeptr parentNode ) {
     int flag = 1;
     if (t->tokenType == idCode) {
         idNode = buildTree( "<ID>", t->tokenVal, parentNode);
+        
         //convert text variable to string 
         char tempString[25];
         strcpy(tempString,idNode->value );
         //store it to scope arrays
-        scope_add(idNode->scope, string2int(tempString));
+        if (scope_findDup (idNode->scope,string2int(tempString)) >0) {
+            printf("[ERROR] : There is a scope conflict.\n");
+        }else
+            scope_add(idNode->scope, string2int(tempString));
         launch(mvars_parse_code, scanIt, parentNode);            // check for <mvars>
     } else
     {
@@ -245,11 +261,16 @@ int mvars_parse (myScanner scanIt, Treeptr parentNode ) {
     if (t->tokenType == idCode) {                                   //if an identifier is found
         mvarsNode = buildTree( "<mvars>", "", parentNode);
         idNode = buildTree( "<ID>", t->tokenVal, mvarsNode);
+        
         //convert text variable to string 
         char tempString[25];
         strcpy(tempString,idNode->value );
         //store it to scope arrays
-        scope_add(idNode->scope, string2int(tempString));
+        if (scope_findDup (idNode->scope,string2int(tempString)) >0) {
+            printf("[ERROR] : There is a scope conflict.\n");
+        }else
+            scope_add(idNode->scope, string2int(tempString));
+            
         launch(mvars_parse_code, scanIt, mvarsNode);                // recognizing : : Identifier
     }else if (t->tokenType==otherCode && t->tokenVal[0]==':') {     //reconizing :
         if (launch (get_next_token, scanIt, parentNode)==0) flag--; //need to check the passing of tempNode here
@@ -273,34 +294,35 @@ int mvars_parse (myScanner scanIt, Treeptr parentNode ) {
 }
 
 //<stats>    ->      <stat>  <mStat>
+//note that launch function is not used in these function calls
 int stats_parse (myScanner scanIt, Treeptr parentNode ) {
     int flag = 1;
     Treeptr statNode, mstatNode;
-    statNode = buildTree("<stat>", "", parentNode);
-    if (stat_parse (scanIt, statNode)<=0) flag--;                                             // check for <stat>
-    //else {
-        mstatNode = buildTree("<mStat>", "", parentNode);
-        mStat_parse (scanIt, mstatNode);                                       // check for <mStat>
-    //}    
+    if (strstr(t->tokenVal,"End")==NULL) {
+        statNode = buildTree("<stat>", "", parentNode);
+        if (stat_parse (scanIt, statNode)<=0) flag--;                                             // check for <stat>
+        if (strstr(t->tokenVal,"End")==NULL) {
+            mstatNode = buildTree("<mStat>", "", parentNode);
+            mStat_parse (scanIt, mstatNode);                                       // check for <mStat>
+        }
 
-    //note that launch function is not used in these function calls
+        //}    
+    }
     //no current token got consumed yet
-    if (flag <= 0) return 0;
-    else
-        return 1;
+    return flag;
 }
 
 //<mStat>    ->      empty | <stat>  <mStat>
 int mStat_parse (myScanner scanIt, Treeptr parentNode ) {
     int flag = 1;
-    Treeptr statNode;
-    statNode = buildTree("<stat>","", parentNode);
-    if (stat_parse(scanIt, statNode)==1) {
-        if (mStat_parse (scanIt, parentNode)==0) flag--;
-    }
-    else
-    {
-        flag--;
+    Treeptr statNode, mstatNode;
+    if (strstr(t->tokenVal,"End")==NULL && strstr(t->tokenVal,"EOF")==NULL) {
+        statNode = buildTree("<stat>","", parentNode);
+        if (stat_parse(scanIt, statNode)<=0) flag--;
+        if (strstr(t->tokenVal,"End")==NULL) {
+            mstatNode = buildTree("<mStat>", "", parentNode);
+            mStat_parse (scanIt, mstatNode);                                       // check for <mStat>
+        }
     }
 
     return flag;
@@ -310,9 +332,11 @@ int mStat_parse (myScanner scanIt, Treeptr parentNode ) {
 int stat_parse (myScanner scanIt, Treeptr parentNode ) {
     Treeptr tempNode;
     int flag = 0;
+    //printf("stat %s\n", t->tokenVal);
     if (strstr(t->tokenVal,"Scan")!=NULL) {
         flag++;
         tempNode = buildTree( "<In>","", parentNode);
+           
         if(launch (scan_parse_code, scanIt, tempNode)<=0) flag--;
     }
     else if (strstr(t->tokenVal,"Print")!=NULL) {
@@ -321,11 +345,13 @@ int stat_parse (myScanner scanIt, Treeptr parentNode ) {
         if(launch (print_parse_code, scanIt, tempNode)<=0) flag--;
     }  
     else if (strstr(t->tokenVal,"[")!=NULL) {
+         printf("iff  %s\n", t->tokenVal);
         flag++;
         tempNode = buildTree( "<If>","", parentNode);
         if(launch (iff_parse_code, scanIt, tempNode)<=0) flag--;
     }
     else if (strstr(t->tokenVal,"Loop")!=NULL) {
+        printf("loop %s\n", t->tokenVal);
         flag++;
         tempNode = buildTree( "<Loop>","", parentNode);
         if(launch (loop_parse_code, scanIt, tempNode)<=0) flag--;
@@ -341,10 +367,27 @@ int stat_parse (myScanner scanIt, Treeptr parentNode ) {
         Treeptr assignNode;
         assignNode = buildTree( "<assign>","", parentNode);
         tempNode = buildTree( "<ID>", t->tokenVal, assignNode);
+        
+        //scope check routines 
+        char tempString[25];
+        int tempScope = tempNode->scope;
+        int foundVar = 0;
+        strcpy(tempString,tempNode->value );
+        for (tempScope; tempScope>=0; tempScope--){
+            if (scope_findDup (tempScope,string2int(tempString)) == 1) {
+                foundVar++;
+            }
+        }
+        if (foundVar== 0) {
+            printf("[ERROR] : Cannot find the [%s] variable in current scope and parent scope.\n", tempNode->value);
+            flag--;
+        }
+        //end scope check
+        
         if(launch (assign_parse_code, scanIt, assignNode)<=0) flag--;
     }
     else if (strstr(t->tokenVal,"End")!=NULL) {
-        if(launch (get_next_token, scanIt, tempNode)==0) flag--;
+        //if(launch (get_next_token, scanIt, tempNode)==0) flag--;
     }
     // if found no <stats>, issue syntax error because <stats> can't be empty per given grammar
     else if (flag < 0)
@@ -360,7 +403,7 @@ int scan_parse (myScanner scanIt, Treeptr parentNode ) {
     int flag = 1;
     
     if (strstr(t->tokenVal,":")!=NULL) {
-        if(launch (get_next_token, scanIt, tempNode)==0) flag--;
+        if(launch (get_next_token, scanIt, tempNode)<=0) flag--;
     }
     else
     {
@@ -370,6 +413,23 @@ int scan_parse (myScanner scanIt, Treeptr parentNode ) {
 
     if (t->tokenType==idCode ) {
         tempNode = buildTree( "<ID>", t->tokenVal, parentNode);
+        
+        //scope check routines 
+        char tempString[25];
+        int tempScope = tempNode->scope;
+        int foundVar = 0;
+        strcpy(tempString,tempNode->value );
+        for (tempScope; tempScope>=0; tempScope--){
+            if (scope_findDup (tempScope,string2int(tempString)) == 1) {
+                foundVar++;
+            }
+        }
+        if (foundVar== 0) {
+            printf("[ERROR] : Cannot find the [%s] variable in current scope and parent scope.\n", tempNode->value);
+            flag--;
+        }
+        //end scope check
+        
         if(launch (get_next_token, scanIt, tempNode)==0) flag--;
     }
     else
@@ -431,9 +491,7 @@ int print_parse (myScanner scanIt, Treeptr parentNode ) {
         fprintf(stderr, "[ERROR : line %d] Incorrect syntax in 'Print' command. Missing '.' \n", t->tokenLine-1);
         flag --;
     }
-    if (flag <= 0) return 0;
-    else
-        return 1;
+    return flag;
 }
 
 //<if>       ->      [ <expr> <RO> <expr> ]  Iff <block> 
@@ -693,9 +751,25 @@ int R_parse(myScanner scanIt, Treeptr parentNode ) {
     int flag = 1;
     if (t->tokenType==idCode) {
         tempNode = buildTree( "<ID>", t->tokenVal, parentNode);
+        
+        //scope check routines 
+        char tempString[25];
+        int tempScope = tempNode->scope;
+        int foundVar = 0;
+        strcpy(tempString,tempNode->value );
+        for (tempScope; tempScope>=0; tempScope--){
+            if (scope_findDup (tempScope,string2int(tempString)) == 1) {
+                foundVar++;
+            }
+        }
+        if (foundVar== 0) {
+            printf("[ERROR] : Cannot find the [%s] variable in current scope and parent scope.\n", tempNode->value);
+            flag--;
+        }
+        //end scope check
+        
         if(launch (get_next_token, scanIt, tempNode)==0) flag--;
-    }
-    if (t->tokenType==intCode) {
+    }else if (t->tokenType==intCode) {
         tempNode = buildTree( "<INT>", t->tokenVal, parentNode);
         if(launch (get_next_token, scanIt, tempNode)==0) flag--;
     }
