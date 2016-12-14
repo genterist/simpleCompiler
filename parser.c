@@ -282,15 +282,16 @@ int mvars_parse (myScanner scanIt, Treeptr parentNode ) {
             flag--;
             fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing another ':' \n", t->tokenLine);
         }
-    } else                                                          //if not there
+    } else if (strstr(t->tokenVal,".")!=NULL) {
+        if(launch (get_next_token, scanIt, parentNode)==0) flag--;
+    }
+    else                                                          //if not there
     {
         flag--;
-        if (t->tokenType!=keywordCode) fprintf(stderr, "[ERROR : line %d] Incorrect syntax of multiple variable declaration. \n", t->tokenLine);
+        if (t->tokenType!=keywordCode) fprintf(stderr, "[ERROR : line %d] Incorrect syntax of variable declaration. \n", t->tokenLine);
     }
 
-    if (flag <= 0) return 0;
-    else
-        return 1;
+    return flag;
 }
 
 //<stats>    ->      <stat>  <mStat>
@@ -416,17 +417,9 @@ int scan_parse (myScanner scanIt, Treeptr parentNode ) {
         
         //scope check routines 
         char tempString[25];
-        int tempScope = tempNode->scope;
-        int foundVar = 0;
         strcpy(tempString,tempNode->value );
-        for (tempScope; tempScope>=0; tempScope--){
-            if (scope_findDup (tempScope,string2int(tempString)) == 1) {
-                foundVar++;
-            }
-        }
-        if (foundVar== 0) {
-            printf("[ERROR] : Cannot find the [%s] variable in current scope and parent scope.\n", tempNode->value);
-            flag--;
+        if (scope_findDup (tempNode->scope,string2int(tempString)) >= 1) {
+                fprintf(stderr, "[ERROR : line %d] Variable [%s] is already defined. \n", t->tokenLine-1, tempNode->value);
         }
         //end scope check
         
@@ -757,13 +750,14 @@ int R_parse(myScanner scanIt, Treeptr parentNode ) {
         int tempScope = tempNode->scope;
         int foundVar = 0;
         strcpy(tempString,tempNode->value );
-        for (tempScope; tempScope>=0; tempScope--){
-            if (scope_findDup (tempScope,string2int(tempString)) == 1) {
-                foundVar++;
-            }
+        int tempVar = string2int(tempString);
+        printf("temp var : %d / %s", tempVar, tempString);
+        while (tempScope>=0){
+            foundVar = foundVar + scope_findDup (tempScope,string2int(tempString));
+            tempScope--;
         }
         if (foundVar== 0) {
-            printf("[ERROR] : Cannot find the [%s] variable in current scope and parent scope.\n", tempNode->value);
+            printf("[ERROR] : Cannot find the [%s] variable in current scope [%d] and parent scopes.\n", tempNode->value, tempNode->scope);
             flag--;
         }
         //end scope check
