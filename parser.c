@@ -463,7 +463,7 @@ int print_parse (myScanner scanIt, Treeptr parentNode ) {
     }
     
     if (strstr(t->tokenVal,"-")!=NULL || strstr(t->tokenVal,"[")!=NULL || t->tokenType==idCode || t->tokenType==intCode) {
-        tempNode = buildTree( "<Expr>", "",parentNode);
+        tempNode = buildTree( "<expr>", "",parentNode);
         if(expr_parse(scanIt, tempNode)==0) flag--;
     }
     else

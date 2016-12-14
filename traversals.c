@@ -113,43 +113,111 @@ void generateASM (Treeptr node, const char *filename){
 		   memset(asmBody,0,sizeof(asmBody));           //preventing mem issues
            
            //Generating body of ASM file
-           if (strstr(node->data,"<INT>")!=NULL) sprintf(asmBody, "%s\n", node->value);
+           if (strstr(node->data,"<INT>")!=NULL && node->asmFlag==0) {
+               sprintf(asmBody, "LOAD %s\n", node->value);
+               node->asmFlag = 1;
+           }
+
            
-           if (strstr(node->data,"<Out>")!=NULL) sprintf(asmBody, "WRITE ");
+           if (strstr(node->data,"<Out>")!=NULL) {
+               if (node->left != NULL) generateASM (node->left, filename);
+               if (node->right != NULL) generateASM (node->right, filename);
+               char temp[25];
+               snprintf(temp, sizeof(temp), "STORE temp1\nWRITE temp%d\n%s 0\n", node->scope, node->value);
+               strcat(asmBody, temp);
+               memset (temp,0,sizeof(temp));
+               snprintf(temp, sizeof(temp), "temp%d 0\n", node->scope);
+               strcat(asmFooter, temp);
+           }
+
            
-           if (strstr(node->data,"<In>")!=NULL) sprintf(asmBody, "READ ");
+           //if (strstr(node->data,"<In>")!=NULL) sprintf(asmBody, "READ ");
            
-           if (strstr(node->data,"<ID>")!=NULL) {
+           if (strstr(node->data,"<ID>")!=NULL && node->asmFlag==0) {
                if (strstr(node->parent->data,"<vars>")!=NULL || strstr(node->parent->data,"<mvars>")!=NULL)
                {
                    char temp[25];
                    snprintf(temp, sizeof(temp), "%s 0\n", node->value);
                    strcat(asmFooter, temp);
                } 
-               else if (strstr(node->parent->data,"<assign>")!=NULL) {}
-               else
+               else if (strstr(node->parent->data,"<In>")!=NULL)
                {
                    char temp[25];
                    snprintf(temp, sizeof(temp), "%s\n", node->value);
+                   sprintf(asmBody, "READ %s\n", node->value);
+               }
+               else
+               {
+                   char temp[25];
+                   snprintf(temp, sizeof(temp), "LOAD %s\n", node->value);
                    sprintf(asmBody, temp);
                }
+               node->asmFlag = 1;
            }
            
-           if (strstr(node->data,"<assign>")!=NULL) {
+           if (strstr(node->data,"<expr>")!=NULL) {
+                    char temp[25];
+                    if (strstr(node->value,"+")!=NULL && node->asmFlag==0)
+                    {
+                        generateASM (node->left, filename);
+                        snprintf(temp, sizeof(temp), "STORE temp%d\n", node->count);
+                        strcat(asmBody, temp);
+                        memset (temp,0,sizeof(temp));
+                        snprintf(temp, sizeof(temp), "temp%d 0\n", node->count);
+                        strcat(asmFooter, temp);
+                        //load the right hand side here
+                        //generateASM (node->right, filename);
+                        //right hand side will be calculated and loaded into accumulator
+                        
+                        snprintf(temp, sizeof(temp), "ADD temp%d\n", node->count, node->count);
+                        strcat(asmBody, temp);
+                        snprintf(temp, sizeof(temp), "STORE temp%d\n", node->count, node->count);
+                        strcat(asmBody, temp);
+                        snprintf(temp, sizeof(temp), "WRITE temp%d\n", node->count);
+                        
+                        strcat(asmBody, temp);
+    
+                        node->asmFlag = 1;
+                    }               
+            }
+            
+            if (strstr(node->data,"<M>")!=NULL) {
+                    char temp[25];
+                    if (strstr(node->value,"-")!=NULL && node->asmFlag==0)
+                    {
+                        generateASM (node->left, filename);
+                        snprintf(temp, sizeof(temp), "STORE temp%d\n", node->count);
+                        strcat(asmBody, temp);
+                        memset (temp,0,sizeof(temp));
+                        snprintf(temp, sizeof(temp), "temp%d 0\n", node->count);
+                        strcat(asmFooter, temp);
+                        //load the right hand side here
+                        //generateASM (node->right, filename);
+                        //right hand side will be calculated and loaded into accumulator
+                        
+                        snprintf(temp, sizeof(temp), "SUB temp%d\nSTORE temp%d\n", node->count, node->count);
+                        strcat(asmBody, temp);
+                        snprintf(temp, sizeof(temp), "WRITE temp%d\n", node->count);
+                        
+                        strcat(asmBody, temp);
+                        //sprintf(asmBody, temp);
+                        
+                        
+                        node->asmFlag = 1;
+                    }               
+            }
+            
+            if (strstr(node->data,"<assign>")!=NULL) {
                     //load the right hand side here
                     generateASM (node->right, filename);
                     //right hand side will be calculated and loaded into accumulator
                     
                     char temp[25];
                     snprintf(temp, sizeof(temp), "STORE %s\n", node->left->value);
+                    sprintf(asmBody, temp);
                 
             }
 
-            if (strstr(node->data,"<expr>")!=NULL) {                  
-                    char temp[25];
-                    snprintf(temp, sizeof(temp), "STORE %s\n", node->left->value);
-                
-            }
 
 		   if (strcmp(asmBody, "") != 0) saveLog (filename, asmBody);
 		   //--end of ASM body----

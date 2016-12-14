@@ -1,14 +1,0 @@
-   <program>  
-    <vars>  
-      <ID> x 
-    <block>  
-      <Stats>  
-        <stat>  
-          <assign> == 
-            <ID> x 
-            <expr>  
-              <M>  
-                <T>  
-                  <F>  
-                    <R>  
-                      <INT> 1 

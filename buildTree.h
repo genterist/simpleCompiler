@@ -20,6 +20,7 @@ struct BSTNode{
 	char value[25];
 	int count;
 	int scope;
+	int asmFlag;
 	Treeptr left;
 	Treeptr right;
 	Treeptr parent;
