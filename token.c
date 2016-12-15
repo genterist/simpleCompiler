@@ -184,13 +184,13 @@ myToken getToken(myScanner s) {
     t = initToken ();
     // get first character from the scanner
     c = fgetc(s->fp);
-    
+    memset(buffer, 0, sizeof(buffer));
     // now process the received character
     while (flag==0) {
         
         if (charRead + 1 > bufLen) {
             flag = 1;
-            fprintf (stderr,"ERROR: Token name exceeds %d characters!! \n", bufLen);
+            fprintf (stderr,"[ERROR] Token name exceeds %d characters!! \n", bufLen);
             }                     //concat all characters beyond buffer
         if (c == '\n') {                                        //in case of a new line 
             lineFlag++;
@@ -213,7 +213,7 @@ myToken getToken(myScanner s) {
 		    t->tokenType = currentState;
 		    strcpy(t->tokenVal, buffer);
 		    t->tokenLine = line;
-		    memset(&buffer[0], 0, sizeof(buffer));                // clearing the buffer
+		    memset(buffer, 0, sizeof(buffer));                // clearing the buffer
             ungetc(c, s->fp);                                     // step back one character
 		}
 		else if (currentState>=980 && currentState <=989) {       // if an error is found
@@ -223,7 +223,7 @@ myToken getToken(myScanner s) {
 		    t->tokenType = currentState;
 		    strcpy(t->tokenVal, "[Error]");
 		    t->tokenLine = line;
-		    //memset(&buffer[0], 0, sizeof(buffer));                // clearing the buffer
+		    memset(buffer, 0, sizeof(buffer));                // clearing the buffer
         }
         else {
             int temp;
@@ -242,7 +242,7 @@ myToken getToken(myScanner s) {
         t->tokenType = eofCode; //998
     }
 
-    
+    memset(buffer, 0, sizeof(buffer));
     return t;
 }
 
@@ -296,6 +296,6 @@ void printToken (myToken t) {
     else strcpy(tokenName,"[ERROR]");
     
     printf("\{ %s , %s , %d }\n",tokenName, t->tokenVal, t->tokenLine);
-    memset(&tokenName[0], 0, sizeof(tokenName)); 
+    memset(tokenName, 0, sizeof(tokenName)); 
 }
 

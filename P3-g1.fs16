@@ -1,0 +1,4 @@
+Var x : : y
+Begin
+  Print [ y + x ] .
+End 

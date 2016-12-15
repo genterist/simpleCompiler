@@ -85,7 +85,7 @@ int scope_findDup (int scope, int val) {
     int posTail = scope_get_end_index(scope);
     int posStart = scope_get_begin_index(scope);
     
-    for (posStart; posStart<=posTail; posStart++){
+    for (posStart; posStart<posTail; posStart++){
         if (scopeMembers[posStart]==val) temp++;
     }
     

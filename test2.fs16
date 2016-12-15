@@ -1,5 +1,0 @@
-Var x 
-Begin 
-  Var y 
-  y == 2 . 
-End 

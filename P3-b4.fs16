@@ -1,0 +1,8 @@
+Var x : : y 
+Begin
+  Begin
+    Var z 
+    Print [ z ] .
+  End
+  Print [ z ] .
+End 

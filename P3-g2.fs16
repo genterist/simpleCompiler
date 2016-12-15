@@ -1,0 +1,5 @@
+Var x : : y 
+Begin
+  Var x 
+  x == y .
+End 

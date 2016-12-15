@@ -101,9 +101,9 @@ int launch (int code, myScanner scanIt, Treeptr parentNode ) {
     int temp = 0;
     //consume the matched token that calls the corresponding function
     //get the next token
-    //clearToken(t);
+    clearToken(t);
     if (t != NULL) {
-        if (strcmp(t->tokenVal, "") != 0) memset(t->tokenVal,0,sizeof(t->tokenVal));           //preventing mem issues
+        memset(t->tokenVal,0,sizeof(t->tokenVal));           //preventing mem issues
     }
 
     if (hasTokenError (t = getToken(scanIt)) == 0 || strstr(t->tokenVal,"EOF")!=NULL) { // if there is no error
@@ -219,15 +219,15 @@ int block_parse (myScanner scanIt, Treeptr parentNode ) {
     }
 
     
-    if (strstr(t->tokenVal,"End")==NULL)
+    if (strstr(t->tokenVal,"End")!=NULL)
     {
-        fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Program has to be ended with an 'End' <block> \n", t->tokenLine-1);
-        flag --;
-    } else {
         if (parentNode->scope>1) {
             if(launch (get_next_token, scanIt, parentNode)==0) flag--;
             //printf(" block %s\n", t->tokenVal);
         }
+    } else {
+        fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Program has to be ended with an 'End' <block> \n", t->tokenLine-1);
+        flag --;
     }
     return flag;
 }
@@ -244,13 +244,13 @@ int vars_parse (myScanner scanIt, Treeptr parentNode ) {
         strcpy(tempString,idNode->value );
         //store it to scope arrays
         if (scope_findDup (idNode->scope,string2int(tempString)) >0) {
-            printf("[ERROR] : There is a scope conflict.\n");
+            fprintf(stderr, "[ERROR - line %d] : There is a scope conflict. Value: %s\n", t->tokenLine+2, idNode->value);
         }else
             scope_add(idNode->scope, string2int(tempString));
         launch(mvars_parse_code, scanIt, parentNode);            // check for <mvars>
     } else
     {
-        fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing the body of variable declairation. \n", t->tokenLine-1);
+        fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing the body of variable declairation. \n", t->tokenLine);
         flag--;
     }
     if (flag <= 0) return 0;
@@ -263,37 +263,49 @@ int vars_parse (myScanner scanIt, Treeptr parentNode ) {
 int mvars_parse (myScanner scanIt, Treeptr parentNode ) {
     Treeptr mvarsNode, idNode;
     int flag = 1;
-    if (t->tokenType == idCode) {                                   //if an identifier is found
-        mvarsNode = buildTree( "<mvars>", "", parentNode);
-        idNode = buildTree( "<ID>", t->tokenVal, mvarsNode);
-        
-        //convert text variable to string 
-        char tempString[25];
-        strcpy(tempString,idNode->value );
-        //store it to scope arrays
-        if (scope_findDup (idNode->scope,string2int(tempString)) >0) {
-            printf("[ERROR] : There is a scope conflict.\n");
-        }else
-            scope_add(idNode->scope, string2int(tempString));
-            
-        launch(mvars_parse_code, scanIt, mvarsNode);                // recognizing : : Identifier
-    }else if (t->tokenType==otherCode && t->tokenVal[0]==':') {     //reconizing :
+    if (t->tokenType==otherCode && t->tokenVal[0]==':') {     //reconizing :
         if (launch (get_next_token, scanIt, parentNode)==0) flag--; //need to check the passing of tempNode here
         if (t->tokenType==otherCode && t->tokenVal[0]==':') {       //recognizing : : , note there is a space in between
             if (launch (get_next_token, scanIt, parentNode)==0) flag--;
+            if (t->tokenType == idCode) {                                   //if an identifier is found
+                mvarsNode = buildTree( "<mvars>", "", parentNode);
+                idNode = buildTree( "<ID>", t->tokenVal, mvarsNode);
+                
+                //convert text variable to string 
+                char tempString[25];
+                strcpy(tempString,idNode->value );
+                //store it to scope arrays
+                if (scope_findDup (idNode->scope,string2int(tempString)) >0) {
+                   fprintf(stderr, "[ERROR - line %d] : There is a scope conflict. Value: %s - Scope: %d\n", t->tokenLine+2, idNode->value, idNode->scope);
+                }else
+                    scope_add(idNode->scope, string2int(tempString));
+                
+                if(launch (get_next_token, scanIt, parentNode)==0) flag--;
+                if (strstr(t->tokenVal,".")!=NULL || strstr(t->tokenVal,":")!=NULL)
+                {
+                    mvars_parse (scanIt, mvarsNode);
+                }
+                //launch(mvars_parse_code, scanIt, mvarsNode);                // recognizing : : Identifier   
+            }
+            else {
+                fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing identifier. \n", t->tokenLine);
+            }
+
             mvars_parse (scanIt, parentNode);
         }  else
         {
             flag--;
             fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing another ':' \n", t->tokenLine);
         }
-    } else if (strstr(t->tokenVal,".")!=NULL) {
+    }
+    
+    
+    if (strstr(t->tokenVal,".")!=NULL) {
         if(launch (get_next_token, scanIt, parentNode)==0) flag--;
     }
-    else                                                          //if not there
-    {
-        flag--;
-        if (t->tokenType!=keywordCode) fprintf(stderr, "[ERROR : line %d] Incorrect syntax of variable declaration. \n", t->tokenLine);
+                                                              //if not there
+    if (flag<1)
+        {if (t->tokenType!=keywordCode) fprintf(stderr, "[ERROR : line %d] Incorrect syntax of variable declaration. \n", t->tokenLine);
     }
 
     return flag;
@@ -385,7 +397,7 @@ int stat_parse (myScanner scanIt, Treeptr parentNode ) {
             }
         }
         if (foundVar== 0) {
-            printf("[ERROR] : Cannot find the [%s] variable in current scope and parent scope.\n", tempNode->value);
+            printf("[ERROR] : Cannot find the [%s] variable in current scope [%d] and parent scope.\n", tempNode->value, tempNode->scope);
             flag--;
         }
         //end scope check
@@ -754,16 +766,15 @@ int R_parse(myScanner scanIt, Treeptr parentNode ) {
         char tempString[25];
         int tempScope = tempNode->scope;
         int foundVar = 0;
-        strcpy(tempString,tempNode->value );
-        //int tempVar = string2int(tempString);
-        //printf("temp var : %d / %s", tempVar, tempString);
+        strcpy(tempString,tempNode->value);
         while (tempScope>=0){
             foundVar = foundVar + scope_findDup (tempScope,string2int(tempString));
+            //printf("%d in scope %d \n", foundVar, tempScope);
             tempScope--;
         }
-        if (foundVar== 0) {
-            printf("[ERROR] : Cannot find the [%s] variable in current scope [%d] and parent scopes.\n", tempNode->value, tempNode->scope);
-            flag--;
+        if (foundVar == 0) {
+                printf("[ERROR] : Cannot find the [%s] variable in current scope [%d] and parent scopes.\n", tempNode->value, tempNode->scope);
+                flag--;
         }
         //end scope check
         
