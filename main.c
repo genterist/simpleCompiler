@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
     generateASM(theTree, asmFile);
     clearScanner (scanIt);
 
-    scope_print();
+    //scope_print();
    
    
 

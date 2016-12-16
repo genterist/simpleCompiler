@@ -1,0 +1,5 @@
+Var x : : y
+Begin
+  Scan : x .
+  Print [ x ] .
+End

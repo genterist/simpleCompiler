@@ -1,5 +1,0 @@
-Var x : : y 
-Begin
-  Var z 
-  Print [ w ] .
-End 

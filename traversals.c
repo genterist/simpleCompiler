@@ -123,10 +123,10 @@ void generateASM (Treeptr node, const char *filename){
                if (node->left != NULL) generateASM (node->left, filename);
                if (node->right != NULL) generateASM (node->right, filename);
                char temp[25];
-               snprintf(temp, sizeof(temp), "STORE temp1\nWRITE temp%d\n%s 0\n", node->scope, node->value);
+               snprintf(temp, sizeof(temp), "STORE T%d\nWRITE T%d\n", node->scope, node->scope, node->value);
                strcat(asmBody, temp);
                memset (temp,0,sizeof(temp));
-               snprintf(temp, sizeof(temp), "temp%d 0\n", node->scope);
+               snprintf(temp, sizeof(temp), "T%d 0\n", node->scope);
                strcat(asmFooter, temp);
            }
 
@@ -160,20 +160,20 @@ void generateASM (Treeptr node, const char *filename){
                     if (strstr(node->value,"+")!=NULL && node->asmFlag==0)
                     {
                         generateASM (node->left, filename);
-                        snprintf(temp, sizeof(temp), "STORE temp%d\n", node->count);
+                        snprintf(temp, sizeof(temp), "STORE T%d\n", node->count);
                         strcat(asmBody, temp);
                         memset (temp,0,sizeof(temp));
-                        snprintf(temp, sizeof(temp), "temp%d 0\n", node->count);
+                        snprintf(temp, sizeof(temp), "T%d 0\n", node->count);
                         strcat(asmFooter, temp);
                         //load the right hand side here
                         //generateASM (node->right, filename);
                         //right hand side will be calculated and loaded into accumulator
                         
-                        snprintf(temp, sizeof(temp), "ADD temp%d\n", node->count, node->count);
+                        snprintf(temp, sizeof(temp), "ADD T%d\n", node->count, node->count);
                         strcat(asmBody, temp);
-                        snprintf(temp, sizeof(temp), "STORE temp%d\n", node->count, node->count);
+                        snprintf(temp, sizeof(temp), "STORE T%d\n", node->count, node->count);
                         strcat(asmBody, temp);
-                        snprintf(temp, sizeof(temp), "WRITE temp%d\n", node->count);
+                        snprintf(temp, sizeof(temp), "WRITE T%d\n", node->count);
                         
                         strcat(asmBody, temp);
     
@@ -186,18 +186,18 @@ void generateASM (Treeptr node, const char *filename){
                     if (strstr(node->value,"-")!=NULL && node->asmFlag==0)
                     {
                         generateASM (node->left, filename);
-                        snprintf(temp, sizeof(temp), "STORE temp%d\n", node->count);
+                        snprintf(temp, sizeof(temp), "STORE T%d\n", node->count);
                         strcat(asmBody, temp);
                         memset (temp,0,sizeof(temp));
-                        snprintf(temp, sizeof(temp), "temp%d 0\n", node->count);
+                        snprintf(temp, sizeof(temp), "T%d 0\n", node->count);
                         strcat(asmFooter, temp);
                         //load the right hand side here
                         //generateASM (node->right, filename);
                         //right hand side will be calculated and loaded into accumulator
                         
-                        snprintf(temp, sizeof(temp), "SUB temp%d\nSTORE temp%d\n", node->count, node->count);
+                        snprintf(temp, sizeof(temp), "SUB T%d\nSTORE T%d\n", node->count, node->count);
                         strcat(asmBody, temp);
-                        snprintf(temp, sizeof(temp), "WRITE temp%d\n", node->count);
+                        snprintf(temp, sizeof(temp), "WRITE T%d\n", node->count);
                         
                         strcat(asmBody, temp);
                         //sprintf(asmBody, temp);
@@ -218,7 +218,7 @@ void generateASM (Treeptr node, const char *filename){
                 
             }
 
-
+        
 		   if (strcmp(asmBody, "") != 0) saveLog (filename, asmBody);
 		   //--end of ASM body----
 		   		   
@@ -229,7 +229,14 @@ void generateASM (Treeptr node, const char *filename){
 		
         //Generating footer of ASM file
 		if (node->parent == NULL) {
-		    if (strcmp(asmFooter, "") != 0) saveLog (filename, asmFooter);}
+		    
+		    if (strcmp(asmFooter, "") != 0) 
+		    {
+		        saveLog(filename, "STOP\n");
+		        saveLog (filename, asmFooter);
+		        }
+	     }
+
 		//--end of ASM footer----
 	}
 	

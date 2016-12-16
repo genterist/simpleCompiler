@@ -1,4 +1,0 @@
-Var x : : y : : x
-Begin
-  Print [ 1 ] .
-End 

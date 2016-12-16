@@ -219,7 +219,7 @@ int block_parse (myScanner scanIt, Treeptr parentNode ) {
     }
 
     
-    if (strstr(t->tokenVal,"End")!=NULL)
+    if (strstr(t->tokenVal,"End")!=NULL || strstr(t->tokenVal,"EOF")!=NULL)
     {
         if (parentNode->scope>1) {
             if(launch (get_next_token, scanIt, parentNode)==0) flag--;

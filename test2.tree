@@ -1,0 +1,20 @@
+   <program>  
+    <vars>  
+      <ID> x 
+      <mvars>  
+        <ID> y 
+    <block>  
+      <Stats>  
+        <stat>  
+          <In>  
+            <ID> x 
+        <mStat>  
+          <stat>  
+            <Out>  
+              <expr>  
+                <M>  
+                  <T>  
+                    <F>  
+                      <R>  
+                        <ID> x 
+          <mStat>  
