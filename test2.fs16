@@ -1,5 +1,4 @@
-Var x : : y
+Var x
 Begin
-  Scan : x .
-  Print [ x ] .
+  Print [ 1 + -2 / 3 ] .
 End

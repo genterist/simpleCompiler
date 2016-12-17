@@ -1,20 +1,25 @@
    <program>  
     <vars>  
       <ID> x 
-      <mvars>  
-        <ID> y 
     <block>  
       <Stats>  
         <stat>  
-          <In>  
-            <ID> x 
-        <mStat>  
-          <stat>  
-            <Out>  
+          <Out>  
+            <expr> + 
+              <M>  
+                <T>  
+                  <F>  
+                    <R>  
+                      <INT> 1 
               <expr>  
                 <M>  
-                  <T>  
-                    <F>  
-                      <R>  
-                        <ID> x 
-          <mStat>  
+                  <T> / 
+                    <F> - 
+                      <F>  
+                        <R>  
+                          <INT> 2 
+                    <T>  
+                      <F>  
+                        <R>  
+                          <INT> 3 
+        <mStat>  
