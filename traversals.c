@@ -124,11 +124,9 @@ void generateASM (Treeptr node, const char *filename){
            if (strstr(node->data,"<Out>")!=NULL && node->asmFlag==0) {
                if (node->left != NULL) generateASM (node->left, filename);
                if (node->right != NULL) generateASM (node->right, filename);
-               snprintf(temp, sizeof(temp), "STORE T%d\nWRITE T%d\n", node->scope, node->scope, node->value);
+               snprintf(temp, sizeof(temp), "STORE Ttemp\nWRITE Ttemp\n", node->scope, node->scope, node->value);
                saveLog(filename, temp);
                memset (temp,0,sizeof(temp));
-               snprintf(temp, sizeof(temp), "T%d 0\n", node->scope);
-               strcat(asmFooter,temp);
                node->asmFlag = 1;
            }
 
@@ -335,7 +333,7 @@ void generateASM (Treeptr node, const char *filename){
         //Generating footer of ASM file
 		if (node->parent == NULL) {
 		    
-		    saveLog(filename, "STOP\n");
+		    saveLog(filename, "STOP\nTtemp\n");
 		    if (strcmp(asmFooter, "") != 0) 
 		    {saveLog (filename, asmFooter);}
 	     }
