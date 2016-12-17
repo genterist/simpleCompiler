@@ -142,8 +142,8 @@ void generateASM (Treeptr node, const char *filename){
                } 
                else if (strstr(node->parent->data,"<In>")!=NULL)
                {
-                   snprintf(temp, sizeof(temp), "%s!!\n", node->value);
-                   saveLog(filename, temp);
+                   //snprintf(temp, sizeof(temp), "%s\n", node->value);
+                   //saveLog(filename, temp);
                    memset (temp,0,sizeof(temp));
                    sprintf(temp, "READ %s\n", node->value);
                    saveLog(filename, temp);
