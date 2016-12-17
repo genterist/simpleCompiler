@@ -230,7 +230,7 @@ void generateASM (Treeptr node, const char *filename){
                     generateASM (node->right, filename);
                     //right hand side will be calculated and loaded into accumulator
                     snprintf(temp, sizeof(temp), "STORE %s\n", node->left->value);
-                    strcat(asmFooter, temp);
+                    saveLog(filename, temp);
                     node->asmFlag = 1;
                 
             }
@@ -245,6 +245,87 @@ void generateASM (Treeptr node, const char *filename){
                     node->asmFlag = 1; 
                 }
             }
+            
+            if (strstr(node->data,"<If>")!=NULL && node->asmFlag==0) {
+                    //load the condition
+                    generateASM (node->left, filename);
+                    //value of <RO> will be loaded to Accumulator
+                    //left side minus right side
+                    if (strcmp(node->left->value,"<")==0)
+                    {
+                        memset (temp,0,sizeof(temp));
+                        snprintf(temp, sizeof(temp), "BRNEG BLOCK%d\nBR END%d\n", node->count, node->count);
+                        saveLog(filename, temp);
+                    }
+                    
+                    if (strcmp(node->left->value,"<=<")==0)
+                    {
+                        memset (temp,0,sizeof(temp));
+                        snprintf(temp, sizeof(temp), "BRZNEG BLOCK%d\nBR END%d\n", node->count, node->count);
+                        saveLog(filename, temp);
+                    }
+                    
+                    if (strcmp(node->left->value,">")==0)
+                    {
+                        memset (temp,0,sizeof(temp));
+                        snprintf(temp, sizeof(temp), "BRPOS BLOCK%d\nBR END%d\n", node->count, node->count);
+                        saveLog(filename, temp);
+                    }
+                    
+                    if (strcmp(node->left->value,">=>")==0)
+                    {
+                        memset (temp,0,sizeof(temp));
+                        snprintf(temp, sizeof(temp), "BRZPOS BLOCK%d\nBR END%d\n", node->count, node->count);
+                        saveLog(filename, temp);
+                    }
+                    
+                    if (strcmp(node->left->value,"=!=")==0)
+                    {
+                        memset (temp,0,sizeof(temp));
+                        snprintf(temp, sizeof(temp), "BRPOS BLOCK%d\nBRNEG BLOCK%d\nBR END\n", node->count, node->count);
+                        saveLog(filename, temp);
+                    }
+                    
+                    if (strcmp(node->left->value,"=")==0)
+                    {
+                        memset (temp,0,sizeof(temp));
+                        snprintf(temp, sizeof(temp), "BRZERO BLOCK%d\nBR END\n", node->count);
+                        saveLog(filename, temp);
+                    }
+                    
+                    memset (temp,0,sizeof(temp));
+                    snprintf(temp, sizeof(temp), "BLOCK%d: NOOP\n", node->count);
+                    saveLog(filename, temp);
+                    
+                    
+                    //load the right hand side
+                    generateASM (node->right, filename);
+                    //end of right hand side
+                    
+                    memset (temp,0,sizeof(temp));
+                    snprintf(temp, sizeof(temp), "END%d: NOOP\n", node->count);
+                    saveLog(filename, temp);
+                    
+                    memset (temp,0,sizeof(temp));
+                    
+                    node->asmFlag = 1;
+                
+            }
+            
+            if (strstr(node->data,"<RO>")!=NULL && node->asmFlag==0) {
+                    generateASM (node->right, filename);
+                    snprintf(temp, sizeof(temp), "STORE T%d\n", node->count);
+                    saveLog(filename, temp);
+                    memset (temp,0,sizeof(temp));
+                    snprintf(temp, sizeof(temp), "T%d 0\n", node->count);
+                    strcat(asmFooter, temp);
+                    //right hand side will be calculated and loaded into accumulator
+                    generateASM (node->left, filename);
+                    snprintf(temp, sizeof(temp), "SUB T%d\n", node->count);
+                    saveLog(filename, temp);
+
+                    node->asmFlag = 1;              
+            }
 
 		}
 		if (node->left != NULL && node->asmFlag==0) generateASM(node->left,filename);
@@ -253,11 +334,9 @@ void generateASM (Treeptr node, const char *filename){
         //Generating footer of ASM file
 		if (node->parent == NULL) {
 		    
+		    saveLog(filename, "STOP\n");
 		    if (strcmp(asmFooter, "") != 0) 
-		    {
-		        saveLog(filename, "STOP\n");
-		        saveLog (filename, asmFooter);
-		        }
+		    {saveLog (filename, asmFooter);}
 	     }
 
 		//--end of ASM footer----
