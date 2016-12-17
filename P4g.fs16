@@ -1,0 +1,15 @@
+Var x 
+Begin
+  Scan : x .
+  Begin
+    Var x 
+    Scan : x .
+    Begin
+       Var x
+       Scan : x .
+       Print [ x ] .
+    End
+    Print [ x ] .
+  End
+  Print [ x ] .
+End

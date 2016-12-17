@@ -1,0 +1,4 @@
+Var x
+Begin
+  Print [ 1 + 2 - 3 * 4 - 5 ] .
+End

@@ -1,0 +1,11 @@
+Var x
+Begin
+  Scan : x .
+  [ x >=> 10 ] Iff 
+  Begin
+     [ x < 21 ] Iff
+     Begin
+        Print [ 1 ] .
+     End
+  End
+End
