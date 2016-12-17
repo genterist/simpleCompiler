@@ -136,22 +136,20 @@ void generateASM (Treeptr node, const char *filename){
            if (strstr(node->data,"<ID>")!=NULL && node->asmFlag==0) {
                if (strstr(node->parent->data,"<vars>")!=NULL || strstr(node->parent->data,"<mvars>")!=NULL)
                {
-                   snprintf(temp, sizeof(temp), "%s 0\n", node->value);
+                   snprintf(temp, sizeof(temp), "%s%d 0\n", node->value, node->scope);
                    strcat(asmFooter, temp);
                    node->asmFlag = 1;
                } 
                else if (strstr(node->parent->data,"<In>")!=NULL)
                {
-                   //snprintf(temp, sizeof(temp), "%s\n", node->value);
-                   //saveLog(filename, temp);
                    memset (temp,0,sizeof(temp));
-                   sprintf(temp, "READ %s\n", node->value);
+                   sprintf(temp, "READ %s%d\n", node->value, node->scope);
                    saveLog(filename, temp);
                    node->asmFlag = 1;
                }
                else
                {
-                   snprintf(temp, sizeof(temp), "LOAD %s\n", node->value);
+                   snprintf(temp, sizeof(temp), "LOAD %s%d\n", node->value, node->scope);
                    saveLog(filename, temp);
                    node->asmFlag = 1;
                }

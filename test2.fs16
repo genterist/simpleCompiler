@@ -1,15 +1,10 @@
-Var x 
+Var x : : y 
 Begin
-  Scan : x .
+  Var z 
+  Print [ 1 ] .
   Begin
-    Var x 
-    Scan : x .
-    Begin
-       Var x
-       Scan : x .
-       Print [ x ] .
-    End
-    Print [ x ] .
+    Var z : : w 
+    Print [ y + x + z + w ] .
   End
-  Print [ x ] .
+  Print [ y + x + z ] . 
 End

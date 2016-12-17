@@ -1,4 +1,4 @@
-Var x 
+cd Var x 
 Begin
   Var y
   y == 2 .

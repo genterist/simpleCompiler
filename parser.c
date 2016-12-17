@@ -436,7 +436,7 @@ int scan_parse (myScanner scanIt, Treeptr parentNode ) {
         char tempString[25];
         strcpy(tempString,tempNode->value );
         if (scope_findDup (tempNode->scope,string2int(tempString)) >= 1) {
-                fprintf(stderr, "[ERROR : line %d] Variable [%s] is already defined. \n", t->tokenLine-1, tempNode->value);
+                fprintf(stderr, "[ERROR : line %d] Variable [%s] is already defined in scope [%d]. \n", t->tokenLine-1, tempNode->value, tempNode->scope);
         }
         //end scope check
         
