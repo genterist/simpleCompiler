@@ -124,7 +124,7 @@ void generateASM (Treeptr node, const char *filename){
            if (strstr(node->data,"<Out>")!=NULL && node->asmFlag==0) {
                if (node->left != NULL) generateASM (node->left, filename);
                if (node->right != NULL) generateASM (node->right, filename);
-               snprintf(temp, sizeof(temp), "STORE Ttemp\nWRITE Ttemp\n", node->scope, node->scope, node->value);
+               snprintf(temp, sizeof(temp), "STORE Ttemp\nWRITE Ttemp\n");
                saveLog(filename, temp);
                memset (temp,0,sizeof(temp));
                node->asmFlag = 1;
@@ -134,20 +134,20 @@ void generateASM (Treeptr node, const char *filename){
            if (strstr(node->data,"<ID>")!=NULL && node->asmFlag==0) {
                if (strstr(node->parent->data,"<vars>")!=NULL || strstr(node->parent->data,"<mvars>")!=NULL)
                {
-                   snprintf(temp, sizeof(temp), "%s%d 0\n", node->value, node->scope);
+                   snprintf(temp, sizeof(temp), "%s 0\n", node->value);
                    strcat(asmFooter, temp);
                    node->asmFlag = 1;
                } 
                else if (strstr(node->parent->data,"<In>")!=NULL)
                {
                    memset (temp,0,sizeof(temp));
-                   sprintf(temp, "READ %s%d\n", node->value, node->scope);
+                   sprintf(temp, "READ %s\n", node->value);
                    saveLog(filename, temp);
                    node->asmFlag = 1;
                }
                else
                {
-                   snprintf(temp, sizeof(temp), "LOAD %s%d\n", node->value, node->scope);
+                   snprintf(temp, sizeof(temp), "LOAD %s\n", node->value);
                    saveLog(filename, temp);
                    node->asmFlag = 1;
                }
@@ -333,7 +333,7 @@ void generateASM (Treeptr node, const char *filename){
         //Generating footer of ASM file
 		if (node->parent == NULL) {
 		    
-		    saveLog(filename, "STOP\nTtemp\n");
+		    saveLog(filename, "STOP\nTtemp 0\n");
 		    if (strcmp(asmFooter, "") != 0) 
 		    {saveLog (filename, asmFooter);}
 	     }
