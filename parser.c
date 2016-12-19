@@ -363,13 +363,13 @@ int stat_parse (myScanner scanIt, Treeptr parentNode ) {
         if(launch (print_parse_code, scanIt, tempNode)<=0) flag--;
     }  
     else if (strstr(t->tokenVal,"[")!=NULL) {
-         printf("iff  %s\n", t->tokenVal);
+         //printf("iff  %s\n", t->tokenVal);
         flag++;
         tempNode = buildTree( "<If>","", parentNode);
         if(launch (iff_parse_code, scanIt, tempNode)<=0) flag--;
     }
     else if (strstr(t->tokenVal,"Loop")!=NULL) {
-        printf("loop %s\n", t->tokenVal);
+        //printf("loop %s\n", t->tokenVal);
         flag++;
         tempNode = buildTree( "<Loop>","", parentNode);
         if(launch (loop_parse_code, scanIt, tempNode)<=0) flag--;
@@ -583,13 +583,16 @@ int loop_parse (myScanner scanIt, Treeptr parentNode ) {
                                                             //check for <expr>
     if (strstr(t->tokenVal,"-")!=NULL || strstr(t->tokenVal,"[")!=NULL || t->tokenType==idCode || t->tokenType==intCode) {
         tempNode = buildTree( "<expr>","", roNode);
+        if(launch (get_next_token, scanIt, tempNode)==0) flag--;
         if(expr_parse(scanIt, tempNode)==0) flag--;
+        //if(launch (get_next_token, scanIt, tempNode)==0) flag--;
     }
     else
     {
-        fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing <expr>. \n", t->tokenLine-1);
+        fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing <expr> in left side of Loop . \n", t->tokenLine-1);
         flag --;
     }
+    
                                                             //check for <RO>    
     if (t->tokenType==relCode ) {
         //put relational codes here
@@ -598,17 +601,18 @@ int loop_parse (myScanner scanIt, Treeptr parentNode ) {
     }
     else
     {
-        fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing relational symbol. \n", t->tokenLine-1);
+        fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing relational symbol. \n", t->tokenLine);
         flag --;
     }   
                                                             //check for another <expr>
     if (strstr(t->tokenVal,"-")!=NULL || strstr(t->tokenVal,"[")!=NULL || t->tokenType==idCode || t->tokenType==intCode) {
         tempNode = buildTree( "<expr>","", roNode);
         if(expr_parse(scanIt, tempNode)==0) flag--;
+        //if(launch (get_next_token, scanIt, tempNode)==0) flag--;
     }
     else
     {
-        fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing <expr>. \n", t->tokenLine-1);
+        fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing <expr> in the right side of loop. \n", t->tokenLine-1);
         flag --;
     }
                                                             //check for ']'
@@ -652,7 +656,7 @@ int assign_parse (myScanner scanIt, Treeptr parentNode ) {
     }
     else
     {
-        fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing <expr>. \n", t->tokenLine-1);
+        fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing <expr> in <assign>. \n", t->tokenLine-1);
         flag --;
     }
     
@@ -799,7 +803,7 @@ int R_parse(myScanner scanIt, Treeptr parentNode ) {
         }
         else
         {
-            fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing <expr>. \n", t->tokenLine-1);
+            fprintf(stderr, "[ERROR : line %d] Incorrect syntax. Missing <expr> in <R>. \n", t->tokenLine-1);
             flag --;
         }
         

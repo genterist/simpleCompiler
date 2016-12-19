@@ -9,8 +9,8 @@ endif
 
 CC = gcc
 OUT_PROG = comp
-TEST_PROG = testScanner
-DATA_FILE = parseResult
+TEST_PROG = *.tree
+DATA_FILE = *.asm
 
 # Add inputs and outputs from these tool invocations to the build variables 
 

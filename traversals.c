@@ -311,6 +311,75 @@ void generateASM (Treeptr node, const char *filename){
                 
             }
             
+            if (strstr(node->data,"<Loop>")!=NULL && node->asmFlag==0) {
+                    //load the condition
+                    memset (temp,0,sizeof(temp));
+                    snprintf(temp, sizeof(temp), "BEGIN%d NOOP\n", node->count);
+                    saveLog(filename, temp);
+                    generateASM (node->left, filename);
+                    //value of <RO> will be loaded to Accumulator
+                    //left side minus right side
+                    if (strcmp(node->left->value,"<")==0)
+                    {
+                        memset (temp,0,sizeof(temp));
+                        snprintf(temp, sizeof(temp), "BRNEG BLOCK%d\nBR END%d\n", node->count, node->count);
+                        saveLog(filename, temp);
+                    }
+                    
+                    if (strcmp(node->left->value,"<=<")==0)
+                    {
+                        memset (temp,0,sizeof(temp));
+                        snprintf(temp, sizeof(temp), "BRZNEG BLOCK%d\nBR END%d\n", node->count, node->count);
+                        saveLog(filename, temp);
+                    }
+                    
+                    if (strcmp(node->left->value,">")==0)
+                    {
+                        memset (temp,0,sizeof(temp));
+                        snprintf(temp, sizeof(temp), "BRPOS BLOCK%d\nBR END%d\n", node->count, node->count);
+                        saveLog(filename, temp);
+                    }
+                    
+                    if (strcmp(node->left->value,">=>")==0)
+                    {
+                        memset (temp,0,sizeof(temp));
+                        snprintf(temp, sizeof(temp), "BRZPOS BLOCK%d\nBR END%d\n", node->count, node->count);
+                        saveLog(filename, temp);
+                    }
+                    
+                    if (strcmp(node->left->value,"=!=")==0)
+                    {
+                        memset (temp,0,sizeof(temp));
+                        snprintf(temp, sizeof(temp), "BRPOS BLOCK%d\nBRNEG BLOCK%d\nBR END\n", node->count, node->count);
+                        saveLog(filename, temp);
+                    }
+                    
+                    if (strcmp(node->left->value,"=")==0)
+                    {
+                        memset (temp,0,sizeof(temp));
+                        snprintf(temp, sizeof(temp), "BRZERO BLOCK%d\nBR END\n", node->count);
+                        saveLog(filename, temp);
+                    }
+                    
+                    memset (temp,0,sizeof(temp));
+                    snprintf(temp, sizeof(temp), "BLOCK%d: NOOP\n", node->count);
+                    saveLog(filename, temp);
+                    
+                    
+                    //load the right hand side
+                    generateASM (node->right, filename);
+                    //end of right hand side
+                    
+                    memset (temp,0,sizeof(temp));
+                    snprintf(temp, sizeof(temp), "BR BEGIN%d\nEND%d: NOOP\n", node->count, node->count);
+                    saveLog(filename, temp);
+                    
+                    memset (temp,0,sizeof(temp));
+                    
+                    node->asmFlag = 1;
+                
+            }
+            
             if (strstr(node->data,"<RO>")!=NULL && node->asmFlag==0) {
                     generateASM (node->right, filename);
                     snprintf(temp, sizeof(temp), "STORE T%d\n", node->count);
