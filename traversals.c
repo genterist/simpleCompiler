@@ -314,7 +314,7 @@ void generateASM (Treeptr node, const char *filename){
             if (strstr(node->data,"<Loop>")!=NULL && node->asmFlag==0) {
                     //load the condition
                     memset (temp,0,sizeof(temp));
-                    snprintf(temp, sizeof(temp), "BEGIN%d NOOP\n", node->count);
+                    snprintf(temp, sizeof(temp), "BEGIN%d: NOOP\n", node->count);
                     saveLog(filename, temp);
                     generateASM (node->left, filename);
                     //value of <RO> will be loaded to Accumulator

@@ -1,9 +1,15 @@
-Var x 
+Var x : : y
 Begin
   x == 5 .
+  y == 0 .
   Loop [ x <=< 10 ]
    Begin
-      Print [ x ] .
+     Loop [ y <=< 15 ]
+     Begin
+      y == y + x .
+      Print [ y ] .
+     End
       x == x + 1 .
+      Print [ x ] .
    End
 End 
