@@ -1,8 +1,10 @@
 # FULL SCANNER IMPLEMENTATION
 Author: Tam N Nguyen
+Github: https://github.com/genterist/simpleParser
 
 ## Note
-Space is recommended after important keywords
+Implementation of driver table in tokenizer
+Implementation of local scopes (rather than global)
 
 ## Execution
 make : compile main program
