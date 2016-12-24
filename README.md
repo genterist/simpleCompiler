@@ -1,28 +1,28 @@
 # A SIMPLE COMPILER
-Author: Tam N Nguyen
+Author: Tam N Nguyen<br/>
 Github: https://github.com/genterist/simpleParser
-
+<br/>
 ## Forewords
 This is a simple compiler demonstrating the basic concepts commonly found in most compilers. Usually, a compiler consists of a scanner, a parser and a generator each of which will be described in further details below.
 There are some bugs in the codes and the final generated assembly codes are just for illustration purposes. If you are my potential employer and want to check out the full version of this program, please email your name, company name, position, contact info to genterist [at] live.com
 Students! You are free to check the codes so you can understand the concepts but please do not copy the codes for your assignments.
 
 ## Execution
-make : compile main program
-make clean : clean up all compiled files
-comp [file name] : compile a file (not that file ext of .fs16 is implicit)
-comp : input from keyboard or file redirection stream
+make : compile main program<br/>
+make clean : clean up all compiled files<br/>
+comp [file name] : compile a file (not that file ext of .fs16 is implicit)<br/>
+comp : input from keyboard or file redirection stream<br/>
+<br/>
+Compiler will generate:<br/>
+1- Onscreen feedbacks<br/>
+2- *.tree files for parsed tree<br/>
+3- *.asm files for generated asm codes<br/>
+<br/>
 
-Compiler will generate:
-1- Onscreen feedbacks
-2- *.tree files for parsed tree
-3- *.asm files for generated asm codes
-
-
-Program will quit when EOF reached or there is an error
-When in manual keyboard input mode, CTRL-Z (EOF signal) will terminate the program
-EOF is recommended to be on a new line in programming text (a blank line at the end of each programming text, after "End" keyword)
-
+Program will quit when EOF reached or there is an error<br/>
+When in manual keyboard input mode, CTRL-Z (EOF signal) will terminate the program<br/>
+EOF is recommended to be on a new line in programming text (a blank line at the end of each programming text, after "End" keyword)<br/>
+<br/>
 ## The Context-Free Grammar to be used
 ~~~~
 <program>  ->     <vars> <block>
