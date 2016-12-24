@@ -1,9 +1,0 @@
-Var x
-Begin
-  Scan : x .
-  [ x < 0 ] Iff 
-  Begin
-     x == - x .
-  End
-  Print [ x ] .
-End
