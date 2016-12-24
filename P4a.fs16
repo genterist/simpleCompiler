@@ -1,5 +1,0 @@
-Var x
-Begin
-  Scan : x .
-  Print [ x ] .
-End
