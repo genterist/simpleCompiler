@@ -1,15 +1,10 @@
 Var x : : y
 Begin
-  x == 5 .
-  y == 0 .
-  Loop [ x <=< 10 ]
-   Begin
-     Loop [ y <=< 15 ]
+  Var z
+  Scan z .
+  [ z < 10 ] Iff 
      Begin
-      y == y + x .
-      Print [ y ] .
+        x == z + 2 .
      End
-      x == x + 1 .
-      Print [ x ] .
-   End
+  Print [ x ] .
 End 

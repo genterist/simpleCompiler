@@ -5,15 +5,7 @@
  Created on  : 15OCT16
  Version     : 1
  Copyright   : (CC)
- Summary	 : a simple token scanner that use automaton driver table method
-                The program will take a file name (file extension of .fs16 is implicit)
-                as the first CLI argument or a content stream (either from keyboard or
-                file redirection)
-                The program will then scan and provide tokens as outputs
-                Each found token will be printed out on each individual line, with token
-                name, token value, and the line where the token is found
-                The program will stop when there is an error with lexical syntax, invalid
-                characters found or error with content stream.
+
  ============================================================================
  */
 

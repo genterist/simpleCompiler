@@ -1,17 +1,23 @@
-# FULL SCANNER IMPLEMENTATION
+# A SIMPLE COMPILER
 Author: Tam N Nguyen
 Github: https://github.com/genterist/simpleParser
 
-## Note
-Implementation of driver table in tokenizer
-Implementation of local scopes (rather than global)
+## Forewords
+This is a simple compiler demonstrating the basic concepts commonly found in most compilers. Usually, a compiler consists of a scanner, a parser and a generator each of which will be described in further details below.
+There are some bugs in the codes and the final generated assembly codes are just for illustration purposes. If you are my potential employer and want to check out the full version of this program, please email your name, company name, position, contact info to genterist [at] live.com
+Students! You are free to check the codes so you can understand the concepts but please do not copy the codes for your assignments.
 
 ## Execution
 make : compile main program
-testFronEnd [file name] : scan a file
-testFrontEnd : input from keyboard or file redirection stream
+make clean : clean up all compiled files
+comp [file name] : compile a file (not that file ext of .fs16 is implicit)
+comp : input from keyboard or file redirection stream
 
-Results will be saved to "parseResult"
+Compiler will generate:
+1- Onscreen feedbacks
+2- *.tree files for parsed tree
+3- *.asm files for generated asm codes
+
 
 Program will quit when EOF reached or there is an error
 When in manual keyboard input mode, CTRL-Z (EOF signal) will terminate the program
@@ -39,16 +45,6 @@ EOF is recommended to be on a new line in programming text (a blank line at the 
 <RO>       ->      >=> | <=< | = |  > | <  |  =!=           // each is one token here
 ~~~~
 
-## Recursive descent parsing
-- This is a top-down parser
-- Every non-terminal has a function
-- Parsed results will be added into a binary tree
-- Parsing is done left to right
-
-## The parsed tree of test case (test2 file)
-![parsed bnTree]
-(https://github.com/genterist/simpleParser/blob/master/ParserBNTree-2.png)
-
 ## Lexical Definitions
 - All case sensitive
 - Each scanner error should display the error message after "Scanner Error:"
@@ -72,7 +68,7 @@ EOF is recommended to be on a new line in programming text (a blank line at the 
 8. Comments
   * Start with @ and end with WS
 
-## Automaton
+## Scanner :: Automaton
 ![parser automaton]
 (https://github.com/genterist/simpleParser/blob/master/Parser-2.png)
 
@@ -82,5 +78,21 @@ EOF is recommended to be on a new line in programming text (a blank line at the 
 ![mapped driver table]
 (https://github.com/genterist/simpleParser/blob/master/Screen%20Shot%202016-10-16%20at%2011.24.31%20AM.png)
 
+## Parser :: Recursive descent parsing
+- This is a top-down parser
+- Every non-terminal has a function
+- Parsed results will be added into a binary tree
+- Parsing is done left to right
+- Parsed tree will be a Binary Tree
 
+## Parser :: The parsed tree of test case (test2 file)
+![parsed bnTree]
+(https://github.com/genterist/simpleParser/blob/master/ParserBNTree-2.png)
+
+## Compiller
+- Compiler will traverse the parsed tree top down
+- Compiler will generate ASM codes and save to .asm file
+- Reserved variables name are T[scopenumber] and Ttemp
+- Compiler uses global storage with local scope separation (no stack was used to maintain local scope variables - full implementation of this program will use stacks to manage local variables)
+- Even when there are errors in programming syntax, an ASM file will still be generated
 .
