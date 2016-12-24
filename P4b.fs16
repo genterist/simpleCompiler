@@ -1,5 +1,0 @@
-Var x
-Begin 
-  x == 1 .
-  Print [ x ] .
-End
