@@ -1,6 +1,6 @@
 # A SIMPLE COMPILER
 Author: Tam N Nguyen<br/>
-Github: https://github.com/genterist/simpleParser
+Github: https://github.com/genterist/simpleCompiler
 <br/>
 ## Forewords
 This is a simple compiler demonstrating the basic concepts commonly found in most compilers. Usually, a compiler consists of a scanner, a parser and a generator each of which will be described in further details below.
